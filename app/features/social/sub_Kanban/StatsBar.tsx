@@ -40,7 +40,7 @@ export default function StatsBar({ stats, aiStats }: StatsBarProps) {
   const inProgress = stats.manual + stats.automatic;
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-gray-900/50 border border-gray-800/50 rounded-lg">
+    <div className="flex items-center justify-between px-4 py-2 bg-gray-900/30 backdrop-blur-md border border-gray-800/30 rounded-lg">
       {/* Pipeline Stats */}
       <div className="flex items-center gap-6">
         <StatItem

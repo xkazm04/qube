@@ -261,18 +261,30 @@ export default function CardDetailModal({
             <div ref={focusTrapRef} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto" role="dialog" aria-modal="true" aria-labelledby="card-detail-modal-title">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
                   <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)]">
                     {(() => {
                       const IconComp = ChannelIcon[item.channel];
                       return <IconComp className="w-5 h-5 text-[var(--color-text-secondary)]" />;
                     })()}
                   </div>
-                  <div>
-                    <h2 id="card-detail-modal-title" className="text-base font-semibold text-[var(--color-text-primary)] capitalize flex items-center gap-2">
+                  <div className="flex-1">
+                    <h2 id="card-detail-modal-title" className="text-base font-semibold text-[var(--color-text-primary)] capitalize">
                       {item.channel.replace('_', ' ')} Feedback
-                      <PriorityBadge priority={item.priority} />
                     </h2>
+                    {/* Stats inline with emojis - only for processed items */}
+                    {item.status !== 'new' && (
+                      <div className="flex items-center gap-3 mt-1 text-xs text-[var(--color-text-muted)]">
+                        <span className="capitalize">📊 {item.status}</span>
+                        {item.analysis?.bugTag && <span>🐛 {item.analysis.bugTag}</span>}
+                        {item.analysis?.suggestedPipeline && <span>⚙️ {item.analysis.suggestedPipeline}</span>}
+                        {item.analysis?.assignedTeam && (
+                          <span className="flex items-center gap-1">
+                            👥 <TeamIcon team={item.analysis.assignedTeam} size="xs" showLabel />
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button
@@ -290,48 +302,27 @@ export default function CardDetailModal({
                 {/* Channel Specific View */}
                 {renderChannelSpecificContent()}
 
-                {/* Criticality Indicators */}
+                {/* Key Indicators - Simplified badges */}
                 <div className="flex items-center gap-3 flex-wrap">
-                  <SLABadge item={item} />
-                  <PriorityBadge priority={item.priority} size="md" />
-                  {item.analysis && (
+                  {item.status !== 'new' && <SLABadge item={item} />}
+                  {item.status !== 'new' && item.analysis && (
                     <>
                       <SentimentBadge sentiment={item.analysis.sentiment} size="md" />
-                      <ConfidenceBadge confidence={item.analysis.confidence} size="md" />
+                      <span className="px-3 py-1.5 text-xs font-medium bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
+                        Confidence: {Math.round(item.analysis.confidence * 100)}%
+                      </span>
                     </>
+                  )}
+                  {/* Show raw channel info for New items - no criticality */}
+                  {item.status === 'new' && (
+                    <span className="px-3 py-1.5 text-xs font-medium bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] rounded-full border border-[var(--color-border-subtle)]">
+                      Awaiting Analysis
+                    </span>
                   )}
                 </div>
 
-                {/* Metadata Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
-                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Status</div>
-                    <div className="font-medium capitalize text-[var(--color-text-primary)]">{item.status}</div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
-                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Classification</div>
-                    <div className="font-medium text-[var(--color-text-primary)]">
-                      {item.analysis?.bugTag || '-'}
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
-                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Pipeline</div>
-                    <div className="font-medium capitalize text-[var(--color-text-primary)]">
-                      {item.analysis?.suggestedPipeline || '-'}
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
-                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Assigned Team</div>
-                    <div className="font-medium text-[var(--color-text-primary)]">
-                      {item.analysis?.assignedTeam ? (
-                        <TeamIcon team={item.analysis.assignedTeam} size="sm" showBadge showLabel />
-                      ) : '-'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Analysis Results */}
-                {item.analysis && (
+                {/* Analysis Results - Only show for processed items */}
+                {item.status !== 'new' && item.analysis && (
                   <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -352,12 +343,21 @@ export default function CardDetailModal({
                           <TeamIcon team={item.analysis.assignedTeam} size="sm" showBadge showLabel />
                         </div>
                       )}
+                      {/* AI Reasoning - explanation of the analysis */}
+                      {item.analysis.reasoning && (
+                        <div className="mt-3 pt-3 border-t border-blue-500/20">
+                          <div className="text-[var(--color-text-muted)] text-xs mb-1.5 font-medium">AI Reasoning:</div>
+                          <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+                            {item.analysis.reasoning}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* Customer Response Section */}
-                {item.customerResponse && (
+                {/* Customer Response Section - Only show for processed items */}
+                {item.status !== 'new' && item.customerResponse && (
                   <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -387,8 +387,14 @@ export default function CardDetailModal({
                   </div>
                 )}
 
-                {/* Tags */}
-                {item.tags.length > 0 && (
+                {/* Tags - Show "awaiting analysis" for new items, actual tags only after processing */}
+                {item.status === 'new' ? (
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      #awaiting-analysis
+                    </span>
+                  </div>
+                ) : item.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {item.tags.map((tag) => (
                       <span
@@ -405,43 +411,50 @@ export default function CardDetailModal({
               {/* Footer with actions */}
               <div className="p-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  {/* JIRA button for manual pipeline */}
-                  {(item.status === 'manual' || item.analysis?.suggestedPipeline === 'manual') && (
-                    <button
-                      onClick={() => onAction('create-jira')}
-                      className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-blue-400 hover:bg-blue-500/10 rounded-[var(--radius-md)] transition-colors flex items-center gap-2 border border-[var(--color-border-subtle)]"
-                      data-testid="card-detail-create-jira-btn"
-                    >
-                      <Ticket className="w-4 h-4" /> Create Jira Ticket
-                    </button>
-                  )}
-                  {/* GitHub button for automatic pipeline */}
-                  {(item.status === 'automatic' || item.analysis?.suggestedPipeline === 'automatic') && (
-                    <button
-                      onClick={() => onAction('create-github')}
-                      className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-gray-100 hover:bg-gray-700 rounded-[var(--radius-md)] transition-colors flex items-center gap-2 border border-[var(--color-border-subtle)]"
-                      data-testid="card-detail-create-github-btn"
-                    >
-                      <Github className="w-4 h-4" /> Create GitHub Issue
-                    </button>
-                  )}
-                  {/* Linked tickets display */}
+                  {/* Linked JIRA ticket - clickable with icon */}
                   {item.jiraTicketKey && (
-                    <span className="text-xs text-blue-400 px-2 py-1 bg-blue-500/10 rounded">
-                      <Ticket className="w-3 h-3 inline mr-1" />
-                      {item.jiraTicketKey}
-                    </span>
+                    <a
+                      href={`https://kazimi.atlassian.net/browse/${item.jiraTicketKey}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-blue-400 px-2.5 py-1.5 bg-blue-500/10 rounded-[var(--radius-md)] hover:bg-blue-500/20 transition-colors border border-blue-500/20"
+                      title={`Open ${item.jiraTicketKey} in JIRA`}
+                    >
+                      <Ticket className="w-3.5 h-3.5" />
+                      <span className="font-medium">{item.jiraTicketKey}</span>
+                    </a>
                   )}
+                  {/* Linked GitHub issue - clickable with icon */}
                   {item.githubIssueUrl && (
                     <a
                       href={item.githubIssueUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-gray-400 px-2 py-1 bg-gray-500/10 rounded hover:text-gray-300"
+                      className="flex items-center gap-1.5 text-xs text-gray-300 px-2.5 py-1.5 bg-gray-500/10 rounded-[var(--radius-md)] hover:bg-gray-500/20 transition-colors border border-gray-500/20"
+                      title="Open GitHub Issue"
                     >
-                      <Github className="w-3 h-3 inline mr-1" />
-                      GitHub Issue
+                      <Github className="w-3.5 h-3.5" />
+                      <span className="font-medium">GitHub Issue</span>
                     </a>
+                  )}
+                  {/* Manual create buttons - only show if no existing issue */}
+                  {!item.jiraTicketKey && (item.status === 'manual' || item.analysis?.suggestedPipeline === 'manual') && (
+                    <button
+                      onClick={() => onAction('create-jira')}
+                      className="px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:text-blue-400 hover:bg-blue-500/10 rounded-[var(--radius-md)] transition-colors flex items-center gap-1.5 border border-[var(--color-border-subtle)]"
+                      data-testid="card-detail-create-jira-btn"
+                    >
+                      <Ticket className="w-3.5 h-3.5" /> Create JIRA Ticket
+                    </button>
+                  )}
+                  {!item.githubIssueUrl && (item.status === 'automatic' || item.analysis?.suggestedPipeline === 'automatic') && (
+                    <button
+                      onClick={() => onAction('create-github')}
+                      className="px-3 py-1.5 text-xs text-[var(--color-text-secondary)] hover:text-gray-100 hover:bg-gray-700 rounded-[var(--radius-md)] transition-colors flex items-center gap-1.5 border border-[var(--color-border-subtle)]"
+                      data-testid="card-detail-create-github-btn"
+                    >
+                      <Github className="w-3.5 h-3.5" /> Create GitHub Issue
+                    </button>
                   )}
                 </div>
 

@@ -14,7 +14,7 @@ import { ActivityProvider, ActivityPanel } from './activity';
 import KanbanCard from './KanbanCard';
 import StatsBar from './StatsBar';
 import { KanbanStateProviders } from './state';
-import { ChannelIconMap } from './KanbanBoardConstants';
+import { ChannelIconMap, ChannelColorMap } from './KanbanBoardConstants';
 import { useKanbanBoardLogic } from './useKanbanBoardLogic';
 import { useKanbanDragHandlers } from './useKanbanDragHandlers';
 import { useKanbanCardHandlers } from './useKanbanCardHandlers';
@@ -41,6 +41,7 @@ function KanbanBoardInner({ useDataset = false }: KanbanBoardProps) {
     setModalOpen,
     feedbackItems,
     filteredItemsByStatus,
+    loadedChannels,
     handleLoadChannelData,
     handleResetView,
     handleSelectAllNew,
@@ -229,11 +230,9 @@ function KanbanBoardInner({ useDataset = false }: KanbanBoardProps) {
         {/* AI Processing Panel */}
         <AIProcessingPanel
           selectedCount={selectionState.selectedCount}
-          provider={aiProcessingState.provider}
           processingStatus={aiProcessingState.status}
           progress={aiProcessingState.progress}
           error={aiProcessingState.error}
-          onProviderChange={aiProcessingState.setProvider}
           onProcess={handleProcessSelected}
           onClearSelection={selectionState.deselectAll}
           onSelectAllNew={handleSelectAllNew}
@@ -277,17 +276,22 @@ function KanbanBoardInner({ useDataset = false }: KanbanBoardProps) {
                     headerActions={
                       column.id === 'new' ? (
                         <div className="flex gap-1 flex-wrap justify-center">
-                          {(Object.entries(ChannelIconMap) as [KanbanChannel, LucideIcon][]).map(([channel, IconComponent]) => (
-                            <button
-                              key={channel}
-                              onClick={() => handleLoadChannelData(channel)}
-                              className="p-1.5 rounded-md hover:bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-                              title={`Load ${channel.replace('_', ' ')} feedback`}
-                              data-testid={`load-channel-${channel}-btn`}
-                            >
-                              <IconComponent className="w-4 h-4" />
-                            </button>
-                          ))}
+                          {(Object.entries(ChannelIconMap) as [KanbanChannel, LucideIcon][]).map(([channel, IconComponent]) => {
+                            const isLoaded = loadedChannels.has(channel);
+                            const colorClass = isLoaded ? ChannelColorMap[channel] : 'text-gray-400 dark:text-gray-600';
+                            
+                            return (
+                              <button
+                                key={channel}
+                                onClick={() => handleLoadChannelData(channel)}
+                                className={`p-1.5 rounded-md hover:bg-[var(--color-surface-elevated)] transition-all ${colorClass} ${isLoaded ? 'ring-1 ring-current' : ''}`}
+                                title={`${isLoaded ? 'Unload' : 'Load'} ${channel.replace('_', ' ')} feedback`}
+                                data-testid={`toggle-channel-${channel}-btn`}
+                              >
+                                <IconComponent className="w-4 h-4" />
+                              </button>
+                            );
+                          })}
                         </div>
                       ) : undefined
                     }

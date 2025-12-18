@@ -17,6 +17,8 @@ import {
   Bot,
   User,
   Loader2,
+  Ticket,
+  Github,
 } from 'lucide-react';
 
 // Custom X (formerly Twitter) icon component
@@ -104,24 +106,24 @@ export default function KanbanCard({
 
   // Channel-specific card styles - using shadows instead of borders, border on selection
   const getChannelCardStyle = () => {
-    const baseStyle = 'rounded-xl shadow-sm hover:shadow-md';
+    const baseStyle = 'rounded-xl shadow-sm hover:shadow-md backdrop-blur-sm';
     switch (item.channel) {
       case 'email':
-        return `${baseStyle} bg-white dark:bg-slate-900 shadow-blue-500/10 hover:shadow-blue-500/20`;
+        return `${baseStyle} bg-white/70 dark:bg-slate-900/70 shadow-blue-500/10 hover:shadow-blue-500/20`;
       case 'x':
-        return `${baseStyle} bg-black shadow-gray-500/10 hover:shadow-gray-500/20`;
+        return `${baseStyle} bg-black/80 shadow-gray-500/10 hover:shadow-gray-500/20`;
       case 'facebook':
-        return `${baseStyle} bg-white dark:bg-[#242526] shadow-indigo-500/10 hover:shadow-indigo-500/20`;
+        return `${baseStyle} bg-white/70 dark:bg-[#242526]/70 shadow-indigo-500/10 hover:shadow-indigo-500/20`;
       case 'support_chat':
-        return `${baseStyle} bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 shadow-green-500/10 hover:shadow-green-500/20`;
+        return `${baseStyle} bg-gradient-to-br from-green-50/60 to-emerald-50/60 dark:from-green-950/40 dark:to-emerald-950/40 shadow-green-500/10 hover:shadow-green-500/20`;
       case 'trustpilot':
-        return `${baseStyle} bg-[#00b67a]/5 dark:bg-[#00b67a]/10 shadow-emerald-500/10 hover:shadow-emerald-500/20`;
+        return `${baseStyle} bg-[#00b67a]/10 dark:bg-[#00b67a]/15 shadow-emerald-500/10 hover:shadow-emerald-500/20`;
       case 'app_store':
-        return `${baseStyle} bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 shadow-purple-500/10 hover:shadow-purple-500/20`;
+        return `${baseStyle} bg-gradient-to-b from-gray-50/60 to-gray-100/60 dark:from-gray-900/70 dark:to-gray-950/70 shadow-purple-500/10 hover:shadow-purple-500/20`;
       case 'instagram':
-        return `${baseStyle} bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 shadow-pink-500/10 hover:shadow-pink-500/20`;
+        return `${baseStyle} bg-gradient-to-br from-purple-50/50 via-pink-50/50 to-orange-50/50 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-orange-950/30 shadow-pink-500/10 hover:shadow-pink-500/20`;
       default:
-        return `${baseStyle} bg-white dark:bg-gray-900 shadow-gray-500/10 hover:shadow-gray-500/20`;
+        return `${baseStyle} bg-white/70 dark:bg-gray-900/70 shadow-gray-500/10 hover:shadow-gray-500/20`;
     }
   };
 
@@ -225,7 +227,7 @@ export default function KanbanCard({
               </div>
               <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.author.name}</div>
             </div>
-            <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+            <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 bg-gray-100/60 dark:bg-gray-800/60 backdrop-blur-sm p-2 rounded-lg">
               {item.content.body.substring(0, 80)}
             </div>
           </div>
@@ -238,7 +240,7 @@ export default function KanbanCard({
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span>Live Chat</span>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg rounded-bl-none p-2 text-sm text-gray-800 dark:text-gray-200 shadow-sm border border-green-100 dark:border-green-900">
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg rounded-bl-none p-2 text-sm text-gray-800 dark:text-gray-200 shadow-sm border border-green-100 dark:border-green-900">
               {item.content.body.substring(0, 60)}...
             </div>
           </div>
@@ -309,10 +311,11 @@ export default function KanbanCard({
     }
   };
 
+  // Priority border only for items that have been analyzed (not in 'new' column)
   const priorityBorderClass =
-    item.priority === 'critical'
+    item.status !== 'new' && item.priority === 'critical'
       ? 'ring-1 ring-red-500'
-      : item.priority === 'high'
+      : item.status !== 'new' && item.priority === 'high'
       ? 'ring-1 ring-yellow-500'
       : '';
 
@@ -407,7 +410,7 @@ export default function KanbanCard({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className={`absolute inset-0 bg-black${opacityClass.strong} z-20 flex items-center justify-center backdrop-blur-sm`}
+              className={`absolute inset-0 bg-black/60 z-20 flex items-center justify-center backdrop-blur-md`}
             >
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className={`${iconClass.xl} text-blue-400 animate-spin`} />
@@ -426,76 +429,74 @@ export default function KanbanCard({
               </span>
               <span className={item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}>{getTimeAgo(item.timestamp)}</span>
             </div>
-            <SLABadge item={item} compact />
+            {/* Right side: Integration indicators + SLA */}
+            <div className="flex items-center gap-1.5">
+              {/* Integration indicators */}
+              {item.jiraTicketKey && (
+                <span className="flex items-center gap-0.5 text-[10px] text-blue-400 px-1.5 py-0.5 bg-blue-500/10 rounded" title={`JIRA: ${item.jiraTicketKey}`}>
+                  <Ticket className="w-3 h-3" />
+                </span>
+              )}
+              {item.githubIssueUrl && (
+                <span className="flex items-center gap-0.5 text-[10px] text-gray-400 px-1.5 py-0.5 bg-gray-500/10 rounded" title="GitHub Issue linked">
+                  <Github className="w-3 h-3" />
+                </span>
+              )}
+              {/* SLA badge only shown after item leaves New column */}
+              {item.status !== 'new' && <SLABadge item={item} compact />}
+            </div>
           </div>
 
-          {/* Channel-specific content */}
-          <div className="overflow-hidden">{renderChannelSpecificContent()}</div>
+          {/* Content - Show original for 'new', AI analysis for others */}
+          {item.status === 'new' ? (
+            /* Original channel-specific content for new items */
+            <div className="overflow-hidden">{renderChannelSpecificContent()}</div>
+          ) : (
+            /* AI Analysis content for analyzed/processed items */
+            <div className="overflow-hidden">
+              {(aiResult?.title || item.analysis) && (
+                <div className={`text-sm font-semibold mb-2 ${item.channel === 'x' ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`}>
+                  {aiResult?.title || item.analysis?.bugTag || 'Analysis Complete'}
+                </div>
+              )}
+              {aiResult?.reasoning && (
+                <div className={`text-xs mb-2 line-clamp-2 ${item.channel === 'x' ? 'text-gray-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                  {aiResult.reasoning}
+                </div>
+              )}
+            </div>
+          )}
 
-          {/* AI Result Section */}
-          <AnimatePresence>
-            {aiResult && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className={`mt-2 pt-2 border-t ${getBorderStyle()}`}
-              >
-                {/* AI Generated Title */}
-                {aiResult.title && (
-                  <div className={`text-sm font-semibold mb-2 ${item.channel === 'x' ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`}>
-                    {aiResult.title}
-                  </div>
-                )}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase ${getClassificationColor(aiResult.classification)}`}>
-                    {aiResult.classification}
+          {/* Consolidated Footer - Only one panel with all info */}
+          <div className={`flex justify-between items-center pt-2 mt-2 border-t ${getBorderStyle()}`}>
+            <div className="flex gap-2 flex-wrap items-center">
+              {/* Show badges only for non-new items */}
+              {item.status !== 'new' && (aiResult || item.analysis) && (
+                <>
+                  {/* Classification badge */}
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase ${getClassificationColor((aiResult?.classification || item.analysis?.bugTag) as string)}`}>
+                    {aiResult?.classification || item.analysis?.bugTag}
                   </span>
-                  <span className={`text-[10px] ${item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}`}>
-                    {Math.round(aiResult.confidence * 100)}% confidence
-                  </span>
+                  {/* Sentiment */}
+                  {(aiResult?.sentiment || item.analysis?.sentiment) && (
+                    <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                      {getSentimentIcon(aiResult?.sentiment || item.analysis?.sentiment as string)}
+                      <span className="capitalize">{aiResult?.sentiment || item.analysis?.sentiment}</span>
+                    </div>
+                  )}
+                  {/* Team assignment */}
+                  {(aiResult?.assignedTeam || item.analysis?.assignedTeam) && (
+                    <TeamIcon team={aiResult?.assignedTeam || item.analysis?.assignedTeam} size="xs" showBadge />
+                  )}
                   {/* Response indicator */}
-                  {aiResult.customerResponse && (
+                  {(aiResult?.customerResponse || item.customerResponse) && (
                     <ResponseIndicator
                       hasResponse={true}
-                      followUpRequired={aiResult.customerResponse.followUpRequired}
+                      followUpRequired={aiResult?.customerResponse?.followUpRequired || item.customerResponse?.followUpRequired || false}
                       size="xs"
                     />
                   )}
-                  {/* Team assignment */}
-                  {aiResult.assignedTeam && (
-                    <TeamIcon team={aiResult.assignedTeam} size="xs" showBadge />
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Footer */}
-          <div className={`flex justify-between items-center pt-2 mt-2 border-t ${getBorderStyle()}`}>
-            <div className="flex gap-2 flex-wrap items-center">
-              {item.analysis && (
-                <span className={`text-[10px] px-2 py-0.5 ${radius.sm} bg-purple-500${opacityClass.default} text-purple-300 font-medium`}>
-                  {item.analysis.bugTag}
-                </span>
-              )}
-              {item.analysis?.sentiment && (
-                <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                  {getSentimentIcon(item.analysis.sentiment)}
-                  <span className="capitalize">{item.analysis.sentiment}</span>
-                </div>
-              )}
-              {/* Team assignment from analysis */}
-              {item.analysis?.assignedTeam && !aiResult?.assignedTeam && (
-                <TeamIcon team={item.analysis.assignedTeam} size="xs" showBadge />
-              )}
-              {/* Response indicator from customerResponse */}
-              {item.customerResponse && !aiResult?.customerResponse && (
-                <ResponseIndicator
-                  hasResponse={true}
-                  followUpRequired={item.customerResponse.followUpRequired}
-                  size="xs"
-                />
+                </>
               )}
             </div>
             <div className="relative">

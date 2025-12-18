@@ -35,6 +35,33 @@ export const FEEDBACK_ANALYSIS_SYSTEM_PROMPT = `You are an expert product feedba
 - **Features, clarifications, and unclear items MUST go to "manual"** pipeline
 - Even bugs should go to "manual" if they are complex, security-related, or require architectural decisions
 
+## PRIORITY Assignment Rules (SLA-aware - VERY IMPORTANT):
+Priority determines customer response SLA. Assign based on CUSTOMER IMPACT, not development effort:
+
+**CRITICAL priority** (30min-2h SLA):
+- Customer is currently blocked and losing money (failed payments, bookings stuck)
+- Active customer complaint requiring immediate de-escalation
+- Security or data breach concerns raised by customer
+
+**HIGH priority** (2h-8h SLA):
+- Customer has an urgent issue affecting their immediate travel/purchase
+- Strong emotional response (angry, frustrated sentiment)
+- Public complaints on social media (X, Facebook, Instagram) - reputation impact
+- Customer service complaints needing quick response
+
+**MEDIUM priority** (8h-48h SLA):
+- Customer needs clarification or help with a general question
+- Non-urgent bug reports that don't block the customer
+- Feature suggestions with moderate sentiment
+
+**LOW priority** (24h-72h SLA) - USE FOR DEVELOPMENT WORK:
+- Bug reports that are informational only (customer not blocked)
+- Feature requests with constructive/neutral sentiment
+- Items that require development work but no urgent customer response needed
+- Technical feedback that helps us improve but customer isn't waiting
+
+RULE: If the feedback is primarily a DEVELOPMENT TASK (bug fix, feature request) and the customer isn't actively blocked/waiting, use LOW or MEDIUM priority. SLA is for CUSTOMER RESPONSE time, not development timeline.
+
 ## Team Assignment:
 Assign to the most appropriate development team based on the issue:
 - **frontend**: UI bugs, styling issues, client-side errors, form problems
@@ -58,6 +85,12 @@ Generate a response tailored to the user's sentiment and situation:
 - Adjust tone based on sentiment (angry users need more empathy, constructive users need acknowledgment)
 - Keep responses concise but warm (2-4 sentences)
 - Sign off with "The [Company] Team"
+
+## CRITICAL OUTPUT RULES:
+- Output ONLY valid JSON - no markdown, no code blocks, no \`\`\`json wrapper
+- Start your response directly with { and end with }
+- Do not include any text before or after the JSON object
+- Ensure all strings are properly escaped
 
 Respond with valid JSON only.`;
 
@@ -94,14 +127,17 @@ ${feedbackList}
 For each feedback item, provide:
 1. Classification (bug/feature/clarification)
 2. Confidence score (0-1)
-3. **Personalized customer response** - warm, empathetic message addressing their specific concern
-4. **Assigned team** - the dev team best suited to handle this
-5. Jira ticket details (if bug or feature)
-6. Suggested pipeline - REMEMBER: only bugs can be "automatic", features/clarifications are always "manual"
-7. Relevant tags
-8. Brief reasoning
+3. **Priority** - based on customer urgency (see priority rules above), NOT development effort
+4. **Personalized customer response** - warm, empathetic message addressing their specific concern
+5. **Assigned team** - the dev team best suited to handle this
+6. Jira ticket details (if bug or feature)
+7. Suggested pipeline - REMEMBER: only bugs can be "automatic", features/clarifications are always "manual"
+8. Relevant tags
+9. Brief reasoning
 
-Respond with a JSON object in this exact format (no markdown, just pure JSON):
+IMPORTANT: Output raw JSON only. Do NOT wrap in markdown code blocks. Do NOT use \`\`\`json. Start directly with { character.
+
+Respond with a JSON object in this exact format:
 {
   "results": [
     {
@@ -109,6 +145,7 @@ Respond with a JSON object in this exact format (no markdown, just pure JSON):
       "title": "string (short 3-6 word title, e.g. 'Search button always disabled')",
       "classification": "bug" | "feature" | "clarification",
       "confidence": number (0-1),
+      "priority": "low" | "medium" | "high" | "critical" (based on customer urgency - use low/medium for dev work, high/critical only for urgent customer issues),
       "customerResponse": {
         "tone": "apologetic" | "informative" | "grateful" | "empathetic",
         "message": "string (personalized 2-4 sentence response addressing their specific concern, signed by The [Company] Team)",
@@ -175,7 +212,13 @@ For MANUAL outcomes, provide:
 - Suggested investigation steps
 - Acceptance criteria for when the issue is resolved
 
-Always respond with valid JSON only. No markdown code blocks.`;
+## CRITICAL OUTPUT RULES:
+- Output ONLY valid JSON - no markdown, no code blocks, no \`\`\`json wrapper
+- Start your response directly with { and end with }
+- Do not include any text before or after the JSON object
+- Ensure all strings are properly escaped
+
+Always respond with valid JSON only.`;
 
 // Generate the requirement analysis prompt
 export function generateRequirementAnalysisPrompt(
@@ -242,7 +285,9 @@ For each feedback item:
 
 ## Response Format
 
-Respond with a JSON object in this exact format (no markdown, just pure JSON):
+IMPORTANT: Output raw JSON only. Do NOT wrap in markdown code blocks. Do NOT use \`\`\`json. Start directly with { character.
+
+Respond with a JSON object in this exact format:
 {
   "results": [
     {

@@ -111,13 +111,13 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     rating: 2,
     tags: ['accessibility', 'font-size', 'contrast'],
   },
-  // ANALYZED - App Store (app_store has 1.25 multiplier, critical: 37min warning, 75min critical, 150min overdue)
+  // NEW - App Store (app_store has 1.25 multiplier, critical: 37min warning, 75min critical, 150min overdue)
   {
     id: 'fb-006',
     company: 'kiwi',
     channel: 'app_store',
     timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 min ago - warning
-    status: 'analyzed',
+    status: 'new',
     priority: 'critical',
     author: {
       name: 'BackpackerBen',
@@ -130,22 +130,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     rating: 1,
     platform: 'ios',
     appVersion: 'v5.124.0',
-    analysis: {
-      bugId: 'BUG_SEARCH_001',
-      bugTag: 'Search Button',
-      sentiment: 'angry',
-      suggestedPipeline: 'automatic',
-      confidence: 0.92,
-    },
     tags: ['search', 'button', 'iOS'],
   },
-  // ANALYZED - Instagram (social 0.5 multiplier, medium: 4h warning, 12h critical, 24h overdue)
+  // NEW - Instagram (social 0.5 multiplier, medium: 4h warning, 12h critical, 24h overdue)
   {
     id: 'fb-007',
     company: 'slevomat',
     channel: 'instagram',
     timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3h ago - ok
-    status: 'analyzed',
+    status: 'new',
     priority: 'medium',
     author: {
       name: 'Wellness Queen CZ',
@@ -160,22 +153,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     engagement: {
       views: 2100,
     },
-    analysis: {
-      bugId: 'BUG_CART_002',
-      bugTag: 'Add to Cart',
-      sentiment: 'disappointed',
-      suggestedPipeline: 'automatic',
-      confidence: 0.88,
-    },
     tags: ['cart', 'button', 'wellness'],
   },
-  // ANALYZED - Email (high priority: 2h warning, 4h critical, 8h overdue)
+  // NEW - Email (high priority: 2h warning, 4h critical, 8h overdue)
   {
     id: 'fb-008',
     company: 'kiwi',
     channel: 'email',
     timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3h ago - warning
-    status: 'analyzed',
+    status: 'new',
     priority: 'high',
     author: {
       name: 'David Chen',
@@ -186,22 +172,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       body: 'My valid credit card is being rejected during checkout. The error says "Card declined" but I\'ve verified with my bank that the card is fine. I\'ve tried 3 different cards and all are rejected.',
       excerpt: 'My valid credit card is being rejected during checkout...',
     },
-    analysis: {
-      bugId: 'BUG_PAYMENT_003',
-      bugTag: 'Payment Gateway',
-      sentiment: 'frustrated',
-      suggestedPipeline: 'manual',
-      confidence: 0.75,
-    },
     tags: ['payment', 'checkout', 'critical'],
   },
-  // MANUAL - X (social 0.5 multiplier, high: 1h warning, 2h critical, 4h overdue)
+  // NEW - X (social 0.5 multiplier, high: 1h warning, 2h critical, 4h overdue)
   {
     id: 'fb-009',
     company: 'kiwi',
     channel: 'x',
     timestamp: new Date(Date.now() - 90 * 60 * 1000).toISOString(), // 1.5h ago - critical
-    status: 'manual',
+    status: 'new',
     priority: 'high',
     author: {
       name: 'TechBlogger Mike',
@@ -217,23 +196,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       retweets: 23,
       replies: 15,
     },
-    analysis: {
-      bugId: 'DOC_API_001',
-      bugTag: 'API Documentation',
-      sentiment: 'frustrated',
-      suggestedPipeline: 'manual',
-      confidence: 0.95,
-    },
-    linkedTickets: ['JIRA-1234'],
     tags: ['api', 'documentation', 'developer'],
   },
-  // MANUAL - Support Chat (support_chat 0.75 multiplier, medium: 6h warning, 18h critical, 36h overdue)
+  // NEW - Support Chat (support_chat 0.75 multiplier, medium: 6h warning, 18h critical, 36h overdue)
   {
     id: 'fb-010',
     company: 'slevomat',
     channel: 'support_chat',
     timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), // 10h ago - warning
-    status: 'manual',
+    status: 'new',
     priority: 'medium',
     author: {
       name: 'Jana Novakova',
@@ -249,23 +220,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       { role: 'agent', message: 'Můžete mi poslat screenshot chybové hlášky?' },
       { role: 'customer', message: 'Posílám. Kód by měl dát 50% slevu ale ukazuje jen 10%' },
     ],
-    analysis: {
-      bugId: 'BUG_VOUCHER_004',
-      bugTag: 'Voucher Logic',
-      sentiment: 'frustrated',
-      suggestedPipeline: 'manual',
-      confidence: 0.82,
-    },
-    linkedTickets: ['JIRA-1235'],
     tags: ['voucher', 'discount', 'Czech'],
   },
-  // AUTOMATIC - Facebook (social 0.5 multiplier, medium: 4h warning, 12h critical, 24h overdue)
+  // NEW - Facebook (social 0.5 multiplier, medium: 4h warning, 12h critical, 24h overdue)
   {
     id: 'fb-011',
     company: 'kiwi',
     channel: 'facebook',
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago - ok
-    status: 'automatic',
+    status: 'new',
     priority: 'medium',
     author: {
       name: 'Travel Enthusiast Group',
@@ -278,22 +241,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     engagement: {
       reactions: { angry: 45, sad: 12, like: 8 },
     },
-    analysis: {
-      bugId: 'BUG_PRICE_005',
-      bugTag: 'Price Consistency',
-      sentiment: 'angry',
-      suggestedPipeline: 'automatic',
-      confidence: 0.91,
-    },
     tags: ['pricing', 'checkout'],
   },
-  // AUTOMATIC - App Store (app_store 1.25 multiplier, high: 2.5h warning, 5h critical, 10h overdue)
+  // NEW - App Store (app_store 1.25 multiplier, high: 2.5h warning, 5h critical, 10h overdue)
   {
     id: 'fb-012',
     company: 'slevomat',
     channel: 'app_store',
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4h ago - warning
-    status: 'automatic',
+    status: 'new',
     priority: 'high',
     author: {
       name: 'AndroidUser2024',
@@ -306,22 +262,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     rating: 1,
     platform: 'android',
     appVersion: 'v3.45.2',
-    analysis: {
-      bugId: 'BUG_CRASH_006',
-      bugTag: 'App Crash',
-      sentiment: 'frustrated',
-      suggestedPipeline: 'automatic',
-      confidence: 0.97,
-    },
     tags: ['crash', 'android', 'startup'],
   },
-  // DONE - Email
+  // NEW - Email
   {
     id: 'fb-013',
     company: 'kiwi',
     channel: 'email',
     timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    status: 'done',
+    status: 'new',
     priority: 'high',
     author: {
       name: 'Patricia Williams',
@@ -332,25 +281,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       body: 'I completed a booking 3 hours ago but still haven\'t received any confirmation email. My booking reference shows on the website but I need the email for my records.',
       excerpt: 'I completed a booking 3 hours ago but still haven\'t received...',
     },
-    analysis: {
-      bugId: 'BUG_EMAIL_007',
-      bugTag: 'Email Delivery',
-      sentiment: 'frustrated',
-      suggestedPipeline: 'automatic',
-      confidence: 0.89,
-    },
-    resolvedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    resolvedBy: 'ai',
-    linkedTickets: ['JIRA-1230'],
     tags: ['email', 'confirmation', 'booking'],
   },
-  // DONE - X
+  // NEW - X
   {
     id: 'fb-014',
     company: 'slevomat',
     channel: 'x',
     timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
-    status: 'done',
+    status: 'new',
     priority: 'medium',
     author: {
       name: 'Czech Food Lover',
@@ -366,25 +305,15 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       retweets: 3,
       replies: 2,
     },
-    analysis: {
-      bugId: 'BUG_FILTER_008',
-      bugTag: 'Location Filter',
-      sentiment: 'constructive',
-      suggestedPipeline: 'manual',
-      confidence: 0.85,
-    },
-    resolvedAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
-    resolvedBy: 'human',
-    linkedTickets: ['JIRA-1228'],
     tags: ['filter', 'location', 'restaurants'],
   },
-  // DONE - Trustpilot
+  // NEW - Trustpilot
   {
     id: 'fb-015',
     company: 'kiwi',
     channel: 'trustpilot',
     timestamp: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
-    status: 'done',
+    status: 'new',
     priority: 'low',
     author: {
       name: 'Happy Traveler',
@@ -396,15 +325,6 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       excerpt: 'Overall loved using Kiwi! One small thing...',
     },
     rating: 4,
-    analysis: {
-      bugId: 'FEAT_CAL_001',
-      bugTag: 'Feature Request',
-      sentiment: 'constructive',
-      suggestedPipeline: 'manual',
-      confidence: 0.78,
-    },
-    resolvedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    resolvedBy: 'human',
     tags: ['feature-request', 'calendar', 'holidays'],
   },
 ];

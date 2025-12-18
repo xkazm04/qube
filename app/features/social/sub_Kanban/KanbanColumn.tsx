@@ -122,8 +122,8 @@ export default function KanbanColumn({
     <div
       className={`
         relative flex-1 min-w-[300px] max-w-[380px] flex flex-col
-        bg-[var(--color-background)] rounded-[var(--radius-lg)]
-        border border-[var(--color-border-subtle)]
+        bg-[var(--color-background)]/40 backdrop-blur-md rounded-[var(--radius-lg)]
+        border border-[var(--color-border-subtle)]/30
         ${getDropIndicatorClass()}
         transition-all duration-150
       `}
@@ -136,8 +136,8 @@ export default function KanbanColumn({
       {/* Column Header */}
       <div
         className={`
-          p-4 border-b border-[var(--color-border-subtle)]
-          sticky top-0 bg-[var(--color-background)] z-10
+          p-4 border-b border-[var(--color-border-subtle)]/30
+          sticky top-0 bg-[var(--color-background)]/60 backdrop-blur-md z-10
           ${getBorderColor() ? `border-l-[3px] ${getBorderColor()}` : ''}
         `}
       >
@@ -151,7 +151,8 @@ export default function KanbanColumn({
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
             {column.title}
           </h3>
-          {selectedInColumn > 0 && (
+          {/* Hide selected badge for New column - it's used elsewhere in the app */}
+          {column.id !== 'new' && selectedInColumn > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] font-medium text-white bg-blue-500 rounded-full">
               {selectedInColumn} selected
             </span>
@@ -173,7 +174,7 @@ export default function KanbanColumn({
 
       {/* Column Body */}
       <div
-        className="flex-1 p-3 overflow-y-auto flex flex-col gap-3 custom-scrollbar"
+        className="flex-1 p-3 overflow-y-auto flex flex-col gap-3 custom-scrollbar min-h-[80vh]"
         role="list"
       >
         <AnimatePresence mode="popLayout">
@@ -254,7 +255,7 @@ export default function KanbanColumn({
 
       {/* Team distribution footer */}
       {teamDistribution.length > 0 && (
-        <div className="p-2 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]">
+        <div className="p-2 border-t border-[var(--color-border-subtle)]/30 bg-[var(--color-surface-elevated)]/60 backdrop-blur-sm">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[9px] text-[var(--color-text-muted)] mr-1">Teams:</span>
             {teamDistribution.map(([team, count]) => (

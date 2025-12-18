@@ -31,3 +31,14 @@ export const ChannelIconMap: Record<KanbanChannel, LucideIcon> = {
   app_store: Smartphone,
   instagram: Instagram,
 };
+
+// Channel color mapping for active state
+export const ChannelColorMap: Record<KanbanChannel, string> = {
+  email: 'text-blue-500',
+  x: 'text-gray-900 dark:text-white',
+  facebook: 'text-[#1877f2]',
+  support_chat: 'text-green-500',
+  trustpilot: 'text-[#00b67a]',
+  app_store: 'text-purple-500',
+  instagram: 'text-pink-500',
+};

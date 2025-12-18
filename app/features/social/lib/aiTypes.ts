@@ -88,6 +88,7 @@ export const FeedbackAnalysisResultSchema = z.object({
   title: z.string().describe('Short 3-6 word title summarizing the issue'),
   classification: z.enum(['bug', 'feature', 'clarification']).describe('Type of feedback'),
   confidence: z.number().min(0).max(1).describe('Confidence score'),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).describe('SLA priority - based on customer urgency, not development effort'),
   customerResponse: CustomerResponseSchema,
   jiraTicket: JiraTicketSchema.optional().describe('Jira ticket data (only for bugs and features)'),
   tags: z.array(z.string()).describe('Relevant tags'),

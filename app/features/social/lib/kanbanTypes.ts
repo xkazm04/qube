@@ -61,6 +61,7 @@ export interface FeedbackAnalysis {
   suggestedPipeline: 'manual' | 'automatic';
   confidence: number;
   assignedTeam?: DevTeam;
+  reasoning?: string; // AI's explanation of the classification and analysis
 }
 
 export interface FeedbackItem {

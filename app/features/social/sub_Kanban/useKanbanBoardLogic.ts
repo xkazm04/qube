@@ -4,6 +4,7 @@ import { mockKanbanFeedback } from '../lib/kanbanMockData';
 import { transformDatasetToFeedbackItem } from '../lib/datasetLoader';
 import type { RequirementAnalysisResult } from '../lib/aiTypes';
 import { useAIProcessing } from '../hooks/useAIProcessing';
+import { useIntegrations } from '../hooks/useIntegrations';
 import { useFeedbackItems } from '../hooks/useFeedbackItems';
 import { useToast } from '@/app/components/ui/ToastProvider';
 import {
@@ -28,9 +29,13 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
   const selectionState = useSelectionState();
   const viewModeState = useViewMode();
 
+  // Integrations hook for GitHub/JIRA
+  const integrations = useIntegrations();
+
   // Normalized feedback items state - O(1) lookups and efficient status grouping
+  // Start with empty state - data is loaded by clicking channel icons
   const feedbackState = useFeedbackItems({
-    initialItems: mockKanbanFeedback.filter(item => item.status !== 'new'),
+    initialItems: [],
   });
   const [datasetLoaded, setDatasetLoaded] = useState(false);
 
@@ -62,14 +67,34 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
     }
   }, [useDataset, datasetLoaded, feedbackState]);
 
-  // Emulate loading data for a specific channel
-  const handleLoadChannelData = useCallback((channel: KanbanChannel) => {
-    const newItems = mockKanbanFeedback
-      .filter(item => item.status === 'new' && item.channel === channel)
-      .map(item => ({ ...item, id: `${item.id}-${Date.now()}` })); // Ensure unique IDs
+  // Track which channels have been loaded
+  const [loadedChannels, setLoadedChannels] = useState<Set<KanbanChannel>>(new Set());
 
-    feedbackState.addItems(newItems);
-  }, [feedbackState]);
+  // Load or unload data for a specific channel
+  const handleLoadChannelData = useCallback((channel: KanbanChannel) => {
+    if (loadedChannels.has(channel)) {
+      // Channel is already loaded - unload it by removing those items
+      const itemsToRemove = feedbackItems
+        .filter(item => item.channel === channel)
+        .map(item => item.id);
+      
+      // Remove each item individually (hook only has removeItem, not removeItems)
+      itemsToRemove.forEach(id => feedbackState.removeItem(id));
+      
+      setLoadedChannels(prev => {
+        const next = new Set(prev);
+        next.delete(channel);
+        return next;
+      });
+    } else {
+      // Channel not loaded - load it
+      const newItems = mockKanbanFeedback
+        .filter(item => item.channel === channel);
+      
+      feedbackState.addItems(newItems);
+      setLoadedChannels(prev => new Set(prev).add(channel));
+    }
+  }, [loadedChannels, feedbackItems, feedbackState]);
 
   // Filters hook
   const filtersState = useFilters(feedbackItems);
@@ -92,6 +117,8 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
         return {
           ...item,
           status: 'analyzed' as KanbanStatus,
+          // Update priority based on AI analysis (realistic SLA)
+          priority: result.priority || item.priority,
           analysis: {
             bugId: result.jiraTicket?.summary || 'AI-Analysis',
             bugTag: result.classification.toUpperCase() || 'ANALYZED',
@@ -99,6 +126,7 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
             suggestedPipeline: result.suggestedPipeline || 'manual',
             confidence: result.confidence || 0.8,
             assignedTeam: result.assignedTeam,
+            reasoning: result.reasoning,
           },
           // Store the customer response
           customerResponse: result.customerResponse,
@@ -135,6 +163,7 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
             suggestedPipeline: result.analysisOutcome,
             confidence: result.confidence,
             assignedTeam: item.analysis?.assignedTeam,
+            reasoning: result.reasoning || item.analysis?.reasoning,
           },
         };
       });
@@ -147,6 +176,20 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
         'Requirement analysis completed',
         `${autoCount} item${autoCount !== 1 ? 's' : ''} ready for automation, ${manualCount} need${manualCount === 1 ? 's' : ''} manual review`
       );
+
+      // Automatically create GitHub issues and JIRA tickets
+      integrations.processIntegrationsFromResults(results).then((integrationResults) => {
+        // Update feedback items with integration URLs/keys
+        integrationResults.forEach((integrationResult, feedbackId) => {
+          if (integrationResult.success) {
+            feedbackState.updateItems([feedbackId], (item) => ({
+              ...item,
+              githubIssueUrl: integrationResult.type === 'github' ? integrationResult.url : item.githubIssueUrl,
+              jiraTicketKey: integrationResult.type === 'jira' ? integrationResult.key : item.jiraTicketKey,
+            }));
+          }
+        });
+      });
     },
     onError: (error) => {
       console.error('AI Processing error:', error);
@@ -195,12 +238,14 @@ export function useKanbanBoardLogic({ useDataset = false }: UseKanbanBoardLogicP
     filtersState,
     swimlanesState,
     aiProcessingState,
+    integrations, // GitHub/JIRA integrations
     selectedItem,
     setSelectedItem,
     modalOpen,
     setModalOpen,
     feedbackItems,
     filteredItemsByStatus,
+    loadedChannels,
 
     // Handlers
     handleLoadChannelData,

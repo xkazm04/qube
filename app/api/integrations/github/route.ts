@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate markdown body for the issue
-    const issueBody = generateGitHubIssueMarkdown(issue);
+    // Generate markdown body for the issue with Copilot mention
+    // Adding @copilot mention at the end triggers Copilot to work on the issue
+    const issueBody = generateGitHubIssueMarkdown(issue) + '\n\n---\n\n@copilot please implement this fix.';
 
     // Prepare the GitHub API request
     const githubPayload = {

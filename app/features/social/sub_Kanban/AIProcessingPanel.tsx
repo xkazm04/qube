@@ -2,16 +2,14 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Loader2 } from 'lucide-react';
-import type { AIProvider, AIProcessingStatus } from '../lib/aiTypes';
+import { CheckCircle, Loader2, Sparkles } from 'lucide-react';
+import type { AIProcessingStatus } from '../lib/aiTypes';
 
 interface AIProcessingPanelProps {
   selectedCount: number;
-  provider: AIProvider;
   processingStatus: AIProcessingStatus;
   progress?: { current: number; total: number };
   error?: string;
-  onProviderChange: (provider: AIProvider) => void;
   onProcess: () => void;
   onClearSelection: () => void;
   onSelectAllNew: () => void;
@@ -20,11 +18,9 @@ interface AIProcessingPanelProps {
 
 export default function AIProcessingPanel({
   selectedCount,
-  provider,
   processingStatus,
   progress,
   error,
-  onProviderChange,
   onProcess,
   onClearSelection,
   onSelectAllNew,
@@ -36,20 +32,30 @@ export default function AIProcessingPanel({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-4 p-4 bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)]"
+      className="mb-4 p-4 bg-[var(--color-surface)]/40 backdrop-blur-md border border-[var(--color-border-subtle)]/30 rounded-[var(--radius-lg)]"
     >
       <div className="flex items-center justify-between flex-wrap gap-4">
-        {/* Left: Selection info and quick actions */}
+        {/* Left: AI Analysis title with selection count and quick actions */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div className="relative">
+            {/* Selection count badge - absolute positioned above */}
+            {/* <AnimatePresence>
+              {selectedCount > 0 && (
+                <motion.span
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  className="absolute -top-2 left-0 px-2 py-0.5 text-[10px] font-semibold text-white bg-blue-500 rounded-full shadow-lg shadow-blue-500/30"
+                >
+                  {selectedCount} selected
+                </motion.span>
+              )}
+            </AnimatePresence> */}
+            
+            {/* AI Analysis title */}
             <span className="text-sm font-medium text-[var(--color-text-primary)]">
               AI Analysis
             </span>
-            {selectedCount > 0 && (
-              <span className="px-2 py-0.5 text-xs font-medium text-white bg-blue-500 rounded-full">
-                {selectedCount} selected
-              </span>
-            )}
           </div>
 
           <div className="h-4 w-px bg-[var(--color-border-subtle)]" />
@@ -73,33 +79,12 @@ export default function AIProcessingPanel({
           </div>
         </div>
 
-        {/* Center: Provider selection */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--color-text-muted)]">Provider:</span>
-          <div className="flex rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] overflow-hidden">
-            <button
-              onClick={() => onProviderChange('gemini')}
-              disabled={isProcessing}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                provider === 'gemini'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              } disabled:opacity-50`}
-            >
-              Gemini 2.5 Flash
-            </button>
-            <button
-              onClick={() => onProviderChange('claude')}
-              disabled={isProcessing}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors border-l border-[var(--color-border-subtle)] ${
-                provider === 'claude'
-                  ? 'bg-orange-500 text-white'
-                  : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-              } disabled:opacity-50`}
-            >
-              Claude Haiku
-            </button>
-          </div>
+        {/* Center: Powered by Gemini */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-[var(--radius-md)]">
+          <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-xs font-medium bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            Powered by Gemini 2.5 Flash
+          </span>
         </div>
 
         {/* Right: Process button */}
@@ -157,7 +142,7 @@ export default function AIProcessingPanel({
             className="mt-3 pt-3 border-t border-[var(--color-border-subtle)]"
           >
             <div className="flex items-center justify-between text-xs text-[var(--color-text-muted)] mb-1">
-              <span>Analyzing feedback with {provider === 'gemini' ? 'Gemini' : 'Claude'}...</span>
+              <span>Analyzing feedback with Gemini...</span>
               <span>{Math.round((progress.current / progress.total) * 100)}%</span>
             </div>
             <div className="h-1.5 bg-[var(--color-surface-elevated)] rounded-full overflow-hidden">
