@@ -35,6 +35,16 @@ export default function Navigation() {
               >
                 Kiwi
               </Link>
+              <Link
+                href="/slevomat"
+                className={`text-sm font-medium transition-colors ${
+                  pathname === "/slevomat"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                }`}
+              >
+                Slevomat
+              </Link>
             </div>
           </div>
         </div>
