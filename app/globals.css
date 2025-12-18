@@ -3,6 +3,30 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
+
+  /* Kanban theme variables - Social dark purple palette */
+  --color-background: #0a0a0a;
+  --color-surface: rgba(17, 24, 39, 0.6);
+  --color-surface-elevated: rgba(31, 41, 55, 0.8);
+  --color-border: rgba(75, 85, 99, 0.5);
+  --color-border-subtle: rgba(55, 65, 81, 0.4);
+  --color-text-primary: #f3f4f6;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+  --color-accent: #a855f7;
+  --color-accent-subtle: rgba(168, 85, 247, 0.15);
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --font-family: inherit;
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
 }
 
 @theme inline {
@@ -69,4 +93,37 @@ body {
   100% {
     background-position: 0% 0%;
   }
+}
+
+/* Kanban card drop animation */
+@keyframes cardDrop {
+  0% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.kanban-card-dropped {
+  animation: cardDrop 0.3s ease-out;
+}
+
+/* Kanban drag states */
+.kanban-dragging {
+  opacity: 0.8;
+  transform: rotate(2deg) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  cursor: grabbing;
+  z-index: 1000;
+}
+
+/* Star rating gold color - semantic exception */
+.star-filled {
+  color: #fbbf24;
 }

@@ -4,41 +4,42 @@ import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, Server } from 'lucide-react';
 import ProjectServerButton from './ProjectServerButton';
-import { mockProjects } from '../lib/mockData';
-import type { ProcessInfo } from '../lib/types';
+import type { Project, ProcessInfo } from '../lib/types';
+
+// Mock projects data
+const mockProjects: Project[] = [
+  { id: 'kiwi', name: 'Kiwi.com', path: '/projects/kiwi', port: 3001 },
+  { id: 'slevomat', name: 'Slevomat', path: '/projects/slevomat', port: 3002 },
+  { id: 'pelikan', name: 'Pelikan', path: '/projects/pelikan', port: 3003 },
+];
+
+// Mock statuses
+const mockStatuses: Record<string, ProcessInfo> = {
+  kiwi: { status: 'running', pid: 12345, port: 3001, uptime: 3600 },
+  slevomat: { status: 'stopped', pid: null, port: null, uptime: null },
+  pelikan: { status: 'running', pid: 54321, port: 3003, uptime: 7200 },
+};
 
 export default function ProjectServersGrid() {
-  // Use mock projects directly for UI mock
-  const projects = mockProjects;
-
-  // Mock statuses state - simulates server status
-  const [statuses, setStatuses] = useState<Record<string, ProcessInfo>>({
-    'project-1': { status: 'running', port: 3000 },
-    'project-2': { status: 'stopped' },
-    'project-3': { status: 'stopped' },
-    'project-4': { status: 'running', port: 4000 },
-  });
+  const [projects] = useState<Project[]>(mockProjects);
+  const [statuses, setStatuses] = useState<Record<string, ProcessInfo>>(mockStatuses);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Mock toggle handler - simulates starting/stopping servers
+  // Handle server toggle (mock)
   const handleToggle = useCallback(async (projectId: string, isRunning: boolean) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    setStatuses(prev => ({
+    setStatuses((prev) => ({
       ...prev,
       [projectId]: isRunning
-        ? { status: 'stopped' }
-        : { status: 'running', port: projects.find(p => p.id === projectId)?.port }
+        ? { status: 'stopped', pid: null, port: null, uptime: null }
+        : { status: 'running', pid: Math.floor(Math.random() * 90000) + 10000, port: projects.find(p => p.id === projectId)?.port || 3000, uptime: 0 },
     }));
   }, [projects]);
 
   // Manual refresh (mock)
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsRefreshing(false);
-  };
+    setTimeout(() => setIsRefreshing(false), 500);
+  }, []);
 
   if (projects.length === 0) {
     return (

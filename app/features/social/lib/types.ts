@@ -94,14 +94,20 @@ export interface ProjectServerStatus {
   port: number;
 }
 
-// Mock types for ProjectServers (simplified for UI mock)
+// Legacy types for backwards compatibility
+export interface SocialFeedback extends RawFeedback {}
+
+// Project types
 export interface Project {
   id: string;
   name: string;
+  path: string;
   port: number;
 }
 
 export interface ProcessInfo {
   status: 'running' | 'stopped' | 'error';
-  port?: number;
+  pid: number | null;
+  port: number | null;
+  uptime: number | null;
 }

@@ -443,9 +443,12 @@ export default function KiwiPage() {
 
                 {/* BUG #3: Baggage info section is EMPTY */}
                 <div className="mt-4 pt-4 border-t border-zinc-100">
-                  <div className="baggage-info">
-                    {/* BUG #3: This section intentionally has no content */}
-                    {/* No cabin bag / checked bag icons or text */}
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="text-zinc-500 font-medium">Baggage included:</span>
+                    {/* BUG #3: This section intentionally has no content - no baggage icons or details */}
+                    <div className="baggage-info flex-1">
+                      {/* No cabin bag / checked bag icons or text shown here */}
+                    </div>
                   </div>
                 </div>
               </div>

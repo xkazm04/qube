@@ -1,4 +1,4 @@
-import type { RawFeedback, EvaluatedFeedback, ProcessingStats, Project } from './types';
+import type { RawFeedback, EvaluatedFeedback, ProcessingStats } from './types';
 
 // Raw unprocessed feedback from social sources
 export const mockRawFeedback: RawFeedback[] = [
@@ -352,12 +352,4 @@ export const mockEvaluatedFeedback: EvaluatedFeedback[] = [
       platform: 'email',
     },
   },
-];
-
-// Mock projects for ProjectServersGrid
-export const mockProjects: Project[] = [
-  { id: 'project-1', name: 'Frontend App', port: 3000 },
-  { id: 'project-2', name: 'Backend API', port: 8080 },
-  { id: 'project-3', name: 'Admin Panel', port: 3001 },
-  { id: 'project-4', name: 'Auth Service', port: 4000 },
 ];

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Users } from 'lucide-react';
+import { Users, LayoutGrid, Kanban } from 'lucide-react';
 import SocialTabs, { type SocialTab } from './components/SocialTabs';
 import ProjectServersGrid from './sub_ProjectServers/ProjectServersGrid';
 import IncomingTopBar from './components/IncomingTopBar';
@@ -14,6 +14,7 @@ import TicketCreationModal from './components/TicketCreationModal';
 import ReplyModal from './components/ReplyModal';
 import JiraTicketModal from './components/JiraTicketModal';
 import ClaudeRequirementModal from './components/ClaudeRequirementModal';
+import { KanbanBoard } from './sub_Kanban';
 import {
   mockRawFeedback,
   mockEvaluatedFeedback,
@@ -26,9 +27,14 @@ import type {
   FeedbackChannel,
 } from './lib/types';
 
+type IncomingViewMode = 'classic' | 'kanban';
+
 export default function SocialLayout() {
   // Tab state
   const [activeTab, setActiveTab] = useState<SocialTab>('incoming');
+
+  // View mode state for incoming tab
+  const [viewMode, setViewMode] = useState<IncomingViewMode>('classic');
 
   // Channel filter state
   const [activeChannel, setActiveChannel] = useState<FeedbackChannel>('all');
@@ -76,7 +82,7 @@ export default function SocialLayout() {
       (fb) => fb.reply?.status === 'sent'
     ).length;
     const repliesPending = evaluatedFeedback.filter(
-      (fb) => fb.reply?.status === 'pending'
+      (fb) => fb.reply?.status === 'draft'
     ).length;
 
     return {
@@ -324,46 +330,99 @@ export default function SocialLayout() {
 
           {activeTab === 'incoming' && (
             <div className="space-y-6">
-              {/* Top Bar with Stats and Filters */}
-              <IncomingTopBar
-                activeChannel={activeChannel}
-                onChannelChange={setActiveChannel}
-                channelCounts={channelCounts}
-                stats={stats}
-                pendingCount={rawFeedback.length}
-              />
-
-              {/* Main Content - Three Column Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-4 items-start">
-                {/* Left Panel - Raw Feedback */}
-                <div className="p-6 rounded-xl bg-gray-900/40 border border-gray-700/40 backdrop-blur-sm min-h-[600px] flex flex-col">
-                  <SimplifiedRawFeedbackList
-                    feedback={filteredRawFeedback}
-                    isProcessing={false}
-                  />
+              {/* View Toggle and Top Bar */}
+              <div className="flex items-center justify-between">
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 p-1 bg-gray-800/50 rounded-lg border border-gray-700/40">
+                  <button
+                    onClick={() => setViewMode('classic')}
+                    className={`
+                      flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all
+                      ${viewMode === 'classic'
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
+                      }
+                    `}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    Classic
+                  </button>
+                  <button
+                    onClick={() => setViewMode('kanban')}
+                    className={`
+                      flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all
+                      ${viewMode === 'kanban'
+                        ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
+                      }
+                    `}
+                  >
+                    <Kanban className="w-4 h-4" />
+                    Kanban
+                  </button>
                 </div>
 
-                {/* Center - AI Processing Button (positioned at top) */}
-                <div className="flex flex-col items-center pt-6">
-                  <AITypographyButton
-                    rawFeedback={rawFeedback}
-                    onProcess={handleAIProcess}
-                    setEvaluatedFeedback={setEvaluatedFeedback}
-                    setRawFeedback={setRawFeedback}
-                  />
-                </div>
-
-                {/* Right Panel - Compact Processed List */}
-                <div className="p-6 rounded-xl bg-gray-900/40 border border-gray-700/40 backdrop-blur-sm min-h-[600px] flex flex-col">
-                  <CompactProcessedList
-                    feedback={evaluatedFeedback}
-                    onCreateTicket={handleCreateTicket}
-                    onSendReply={handleSendReply}
-                    onViewTicket={handleViewTicket}
-                    onViewRequirement={handleViewRequirement}
-                  />
-                </div>
+                {/* Stats summary for Kanban view */}
+                {viewMode === 'kanban' && (
+                  <div className="flex items-center gap-4 text-xs text-gray-400">
+                    <span>Pending: <span className="text-purple-400">{rawFeedback.length}</span></span>
+                    <span>Processed: <span className="text-green-400">{evaluatedFeedback.length}</span></span>
+                  </div>
+                )}
               </div>
+
+              {/* Classic View */}
+              {viewMode === 'classic' && (
+                <>
+                  {/* Top Bar with Stats and Filters */}
+                  <IncomingTopBar
+                    activeChannel={activeChannel}
+                    onChannelChange={setActiveChannel}
+                    channelCounts={channelCounts}
+                    stats={stats}
+                    pendingCount={rawFeedback.length}
+                  />
+
+                  {/* Main Content - Three Column Layout */}
+                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-4 items-start">
+                    {/* Left Panel - Raw Feedback */}
+                    <div className="p-6 rounded-xl bg-gray-900/40 border border-gray-700/40 backdrop-blur-sm min-h-[600px] flex flex-col">
+                      <SimplifiedRawFeedbackList
+                        feedback={filteredRawFeedback}
+                        isProcessing={false}
+                      />
+                    </div>
+
+                    {/* Center - AI Processing Button (positioned at top) */}
+                    <div className="flex flex-col items-center pt-6">
+                      <AITypographyButton
+                        rawFeedback={rawFeedback}
+                        onProcess={handleAIProcess}
+                        setEvaluatedFeedback={setEvaluatedFeedback}
+                        setRawFeedback={setRawFeedback}
+                      />
+                    </div>
+
+                    {/* Right Panel - Compact Processed List */}
+                    <div className="p-6 rounded-xl bg-gray-900/40 border border-gray-700/40 backdrop-blur-sm min-h-[600px] flex flex-col">
+                      <CompactProcessedList
+                        feedback={evaluatedFeedback}
+                        onCreateTicket={handleCreateTicket}
+                        onSendReply={handleSendReply}
+                        onViewTicket={handleViewTicket}
+                        onViewRequirement={handleViewRequirement}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Kanban View */}
+              {viewMode === 'kanban' && (
+                <div className="p-6 rounded-xl bg-gray-900/40 border border-gray-700/40 backdrop-blur-sm">
+                  <KanbanBoard />
+                </div>
+              )}
             </div>
           )}
 

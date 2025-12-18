@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Ticket, CheckCircle, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Ticket, CheckCircle, Loader2, ExternalLink, Sparkles, AlertCircle } from 'lucide-react';
 
 interface TicketCreationModalProps {
   isOpen: boolean;
@@ -247,6 +247,7 @@ export default function TicketCreationModal({
                       >
                         <Ticket className="w-4 h-4 text-purple-400" />
                         <span className="text-purple-300 font-mono font-medium">{generatedKey}</span>
+                        <ExternalLink className="w-4 h-4 text-gray-500" />
                       </motion.div>
 
                       {/* Sparkle effects */}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, CheckCircle, Facebook, Twitter, Mail, Sparkles, MessageCircle, Edit3 } from 'lucide-react';
+import { X, Send, CheckCircle, Loader2, Facebook, Twitter, Mail, Sparkles, MessageCircle, Edit3 } from 'lucide-react';
 import type { FeedbackChannel } from '../lib/types';
 
 interface ReplyModalProps {
@@ -100,8 +100,8 @@ export default function ReplyModal({
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/20">
-                    <ChannelIcon className="w-5 h-5 text-blue-400" />
+                  <div className={`p-2 rounded-lg bg-${channel.color}-500/20`}>
+                    <ChannelIcon className={`w-5 h-5 text-${channel.color}-400`} />
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-white">Send Reply</h2>
@@ -183,7 +183,7 @@ export default function ReplyModal({
                         {[0, 1, 2].map((i) => (
                           <motion.div
                             key={i}
-                            className="absolute inset-0 rounded-full border-2 border-blue-500/50"
+                            className={`absolute inset-0 rounded-full border-2 border-${channel.color}-500/50`}
                             initial={{ scale: 1, opacity: 1 }}
                             animate={{
                               scale: [1, 2, 2],
@@ -199,11 +199,11 @@ export default function ReplyModal({
 
                         {/* Center icon */}
                         <motion.div
-                          className="absolute inset-0 flex items-center justify-center rounded-full bg-blue-500/20"
+                          className={`absolute inset-0 flex items-center justify-center rounded-full bg-${channel.color}-500/20`}
                           animate={{ scale: [1, 0.95, 1] }}
                           transition={{ duration: 0.5, repeat: Infinity }}
                         >
-                          <Send className="w-8 h-8 text-blue-400" />
+                          <Send className={`w-8 h-8 text-${channel.color}-400`} />
                         </motion.div>
                       </div>
 
