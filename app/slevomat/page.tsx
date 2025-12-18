@@ -1,6 +1,135 @@
 "use client";
 
 import { useState } from "react";
+import FeedbackPanel, { FeedbackItem } from "../components/FeedbackPanel";
+
+// Slevomat feedback data - 10 items covering all 5 bugs
+const slevomatFeedback: FeedbackItem[] = [
+  // Bug #6: Hidden Expiry Date (2 items)
+  {
+    id: "SLEVO-003",
+    channel: "facebook",
+    icon: "📘",
+    author: "Lenka Procházková",
+    time: "2 hours ago",
+    content: "POZOR! Koupila jsem voucher na Slevomatu a až PO zaplacení jsem zjistila, že platí jen do konce příštího týdne! Kde to bylo napsané před nákupem?? 😤",
+    translation: "WARNING! I bought a voucher and only AFTER paying I found out it's valid only until next week! Where was this written before purchase??",
+    reactions: { angry: 23, sad: 8 },
+    tag: "📅 Expiry"
+  },
+  {
+    id: "SLEVO-012",
+    channel: "support_chat",
+    icon: "💬",
+    author: "Anna K.",
+    time: "1 hour ago",
+    conversation: [
+      { role: "customer", message: "Koupila jsem voucher na saunu a teď jsem zjistila že vyprší za 5 dní! Proč to nebylo vidět před nákupem?" },
+      { role: "agent", message: "Moc se omlouvám. Datum platnosti by mělo být zobrazeno u nabídky..." },
+      { role: "customer", message: "Na stránce nabídky jsem žádné datum expirace neviděla, až v emailu po zaplacení" }
+    ],
+    translation: "Customer bought sauna voucher, found out only 5 days validity after purchase. Expiry date not shown on deal page.",
+    tag: "📅 Expiry"
+  },
+  // Bug #7: Add to Cart Broken (2 items)
+  {
+    id: "SLEVO-001",
+    channel: "support_chat",
+    icon: "💬",
+    author: "Petra Nováková",
+    time: "30 min ago",
+    conversation: [
+      { role: "customer", message: "Snažím se přidat wellness pobyt do košíku ale tlačítko vůbec nereaguje" },
+      { role: "agent", message: "O který pobyt se jedná?" },
+      { role: "customer", message: "Ten romantický wellness pro dva. Zkoušela jsem to i na jiném wellness pobytu - stejný problém. U restaurací to funguje normálně." }
+    ],
+    translation: "Trying to add wellness stay to cart but button doesn't respond. Same issue on other wellness deals. Restaurant deals work fine.",
+    tag: "🛒 Cart"
+  },
+  {
+    id: "SLEVO-020",
+    channel: "twitter",
+    icon: "🐦",
+    author: "@ZuzkaTravel",
+    time: "15 min ago",
+    content: "Týden se snažím koupit wellness pobyt na @slevomat_cz a pořád nefunguje tlačítko. Support říká že na tom pracují. Týden! 😤 Koupím jinde.",
+    translation: "Been trying to buy wellness stay for a week and button still doesn't work. Support says they're working on it. A week! Will buy elsewhere.",
+    engagement: { likes: 15, retweets: 4 },
+    tag: "🛒 Cart",
+    priority: "churn_risk"
+  },
+  // Bug #8: Wrong Discount Percentage (2 items)
+  {
+    id: "SLEVO-002",
+    channel: "email",
+    icon: "📧",
+    author: "Martin Dvořák",
+    time: "4 hours ago",
+    subject: "Stížnost - klamavá sleva",
+    excerpt: "Na stránce je uvedena sleva 70%, původní cena 2990 Kč, aktuální 1790 Kč. Ale výpočet: (2990-1790)/2990 = 40%. To není 70%! Považuji to za klamavou reklamu.",
+    translation: "Site shows 70% discount, but calculation shows only 40%. Consider this false advertising.",
+    tag: "💰 Pricing"
+  },
+  {
+    id: "SLEVO-029",
+    channel: "facebook",
+    icon: "📘",
+    author: "Lucie Benešová",
+    time: "1 hour ago",
+    content: "70%? 😂 Propočítala jsem si váš 'wellness pobyt se slevou 70%' - původní cena 2990, aktuální 1790. To je 40% sleva, ne 70%. Učili jste se matematiku?",
+    translation: "70%? 😂 I calculated your '70% off wellness stay' - original 2990, current 1790. That's 40%, not 70%. Did you learn math?",
+    reactions: { haha: 45, angry: 12 },
+    tag: "💰 Pricing",
+    priority: "viral_risk"
+  },
+  // Bug #9: Missing Restaurant Location (2 items)
+  {
+    id: "SLEVO-004",
+    channel: "twitter",
+    icon: "🐦",
+    author: "@FoodieKarla",
+    time: "3 hours ago",
+    content: "Chtěla jsem koupit ten degustační menu deal na @slevomat_cz ale... kde je ta restaurace vlastně? 😅 Nikde nevidím adresu ani mapu. Help? #praha #foodie",
+    translation: "Wanted to buy the tasting menu deal but... where is the restaurant actually? Can't see address or map anywhere.",
+    engagement: { likes: 12, retweets: 3 },
+    tag: "📍 Location"
+  },
+  {
+    id: "SLEVO-023",
+    channel: "email",
+    icon: "📧",
+    author: "La Bottega (Partner)",
+    time: "Yesterday",
+    subject: "Chybějící adresa u naší nabídky",
+    excerpt: "Jsme partnerská restaurace. Několik zákazníků nám volalo s dotazem, kde se nacházíme, protože na Slevomatu prý není uvedena adresa. V systému jsme ji vyplnili...",
+    translation: "We're partner restaurant. Customers calling asking where we are - address not shown on Slevomat. We filled it in the system...",
+    tag: "📍 Location",
+    priority: "partner"
+  },
+  // Bug #10: Error Messages Wrong Language (2 items)
+  {
+    id: "SLEVO-005",
+    channel: "trustpilot",
+    icon: "⭐",
+    author: "Thomas B.",
+    location: "Germany",
+    time: "Yesterday",
+    rating: 2,
+    title: "Error messages in wrong language",
+    content: "I switched the website to English but error messages appear in Czech! 'Toto pole je povinné' - I had to use Google Translate. If you offer English, errors should be English too.",
+    tag: "🌐 Language"
+  },
+  {
+    id: "SLEVO-024",
+    channel: "twitter",
+    icon: "🐦",
+    author: "@TouristInPrague",
+    time: "2 hours ago",
+    content: "Trying to buy spa voucher on @slevomat_cz but checkout form shows errors in Czech even though I'm on English site 😕 'Neplatný email' - had to Google translate.",
+    engagement: { likes: 5, retweets: 1 },
+    tag: "🌐 Language"
+  }
+];
 
 // Sample deal data
 const deals = [
@@ -157,8 +286,17 @@ export default function SlevomatPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
+      {/* Feedback Panel */}
+      <FeedbackPanel
+        feedbackItems={slevomatFeedback}
+        accentColor="#e31c79"
+        agentColor="#e31c79"
+      />
+
+      {/* Main Content - adjusted for feedback panel */}
+      <div className="mr-0 lg:mr-[380px] transition-all duration-300">
+        {/* Header */}
+        <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
@@ -412,12 +550,13 @@ export default function SlevomatPage() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-[#1a1a1a] text-white py-8 mt-12">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">
-          <p>{locale === 'cz' ? 'Toto je demo stránka pro ukázku chyb. Není spojeno se Slevomat.cz' : 'This is a demo page for showcasing bugs. Not affiliated with Slevomat.cz'}</p>
-        </div>
-      </footer>
+        {/* Footer */}
+        <footer className="bg-[#1a1a1a] text-white py-8 mt-12">
+          <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-400">
+            <p>{locale === 'cz' ? 'Toto je demo stránka pro ukázku chyb. Není spojeno se Slevomat.cz' : 'This is a demo page for showcasing bugs. Not affiliated with Slevomat.cz'}</p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

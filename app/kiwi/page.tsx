@@ -1,6 +1,124 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import FeedbackPanel, { FeedbackItem } from "../components/FeedbackPanel";
+
+// Kiwi feedback data - 10 items covering all 5 bugs
+const kiwiFeedback: FeedbackItem[] = [
+  // Bug #1: Currency Display (2 items)
+  {
+    id: "KIWI-002",
+    channel: "email",
+    icon: "📧",
+    author: "James Richardson",
+    time: "5 hours ago",
+    subject: "Currency display issue - showing CZK instead of GBP",
+    excerpt: "Whenever I search for flights, all prices are displayed in Czech Koruna (CZK) instead of British Pounds. I have tried changing the currency in the dropdown menu - it doesn't seem to save...",
+    tag: "💱 Currency"
+  },
+  {
+    id: "KIWI-010",
+    channel: "facebook",
+    icon: "📘",
+    author: "Robert Kowalski",
+    time: "3 hours ago",
+    content: "Currency is stuck on Czech crowns and I'm in Poland. I don't want to do math every time I look at a flight price. The selector in the menu does nothing. Please fix this basic functionality!",
+    tag: "💱 Currency"
+  },
+  // Bug #2: Date Picker Mobile (2 items)
+  {
+    id: "KIWI-001",
+    channel: "support_chat",
+    icon: "💬",
+    author: "Sarah M.",
+    time: "1 hour ago",
+    conversation: [
+      { role: "customer", message: "I'm trying to book a return flight but I can't select the return date on my iPhone" },
+      { role: "agent", message: "Could you describe what happens when you tap on the return date field?" },
+      { role: "customer", message: "Nothing. Literally nothing happens. I tap and tap and the calendar just doesn't open." }
+    ],
+    tag: "📱 Mobile"
+  },
+  {
+    id: "KIWI-023",
+    channel: "twitter",
+    icon: "🐦",
+    author: "@DigitalNomadNina",
+    followers: "23.5K",
+    time: "30 min ago",
+    content: "PSA for my fellow travelers: @kiwicom mobile site has a bug where you can't select return dates. The calendar just doesn't open on phone. Use desktop until they fix it! 🐛💻",
+    engagement: { likes: 342, retweets: 156 },
+    tag: "📱 Mobile",
+    priority: "viral"
+  },
+  // Bug #3: Missing Baggage Info (2 items)
+  {
+    id: "KIWI-004",
+    channel: "twitter",
+    icon: "🐦",
+    author: "@TravellerTom_",
+    time: "2 hours ago",
+    content: "@kiwicom just got charged €45 at the gate for my cabin bag because your site showed NOTHING about baggage allowance. Where's the transparency? 🤬 #kiwifail",
+    engagement: { likes: 47, retweets: 12 },
+    tag: "🧳 Baggage"
+  },
+  {
+    id: "KIWI-018",
+    channel: "email",
+    icon: "📧",
+    author: "Henrik Larsson",
+    time: "4 hours ago",
+    subject: "Baggage information not visible",
+    excerpt: "I almost made an expensive mistake today. Nowhere on the booking page did it say what baggage was included. The baggage section appears to be completely empty...",
+    tag: "🧳 Baggage"
+  },
+  // Bug #4: Search Button Disabled (2 items)
+  {
+    id: "KIWI-003",
+    channel: "facebook",
+    icon: "📘",
+    author: "Mike Thompson",
+    time: "45 min ago",
+    content: "Your search doesn't even work lol. Filled everything in and the search button is greyed out. Great ad though 😂👎",
+    reactions: { angry: 12, haha: 8 },
+    tag: "🔍 Search"
+  },
+  {
+    id: "KIWI-008",
+    channel: "app_store",
+    icon: "📱",
+    author: "BackpackerBen",
+    time: "6 hours ago",
+    rating: 1,
+    title: "Can't even complete a search",
+    content: "Can't even get past the search screen. I fill in departure, destination, dates - the search button stays grey and unclickable. Tried reinstalling twice.",
+    tag: "🔍 Search"
+  },
+  // Bug #5: Low Contrast / Accessibility (2 items)
+  {
+    id: "KIWI-005",
+    channel: "trustpilot",
+    icon: "⭐",
+    author: "Margaret H.",
+    time: "Yesterday",
+    rating: 2,
+    title: "Website accessibility is terrible",
+    content: "I'm 67 years old and have mild visual impairment. I literally cannot read the flight times on the search results. The text is so light grey it's almost invisible against the white background.",
+    tag: "🎨 Accessibility"
+  },
+  {
+    id: "KIWI-012",
+    channel: "twitter",
+    icon: "🐦",
+    author: "@AccessibleTravel",
+    followers: "8.9K",
+    time: "3 hours ago",
+    content: "Did a quick accessibility audit of @kiwicom - flight times nearly invisible with ~2:1 contrast ratio. Come on @kiwicom, it's 2024. #a11y #AccessibleTravel #WCAG",
+    engagement: { likes: 234, retweets: 89 },
+    tag: "🎨 Accessibility",
+    priority: "advocacy"
+  }
+];
 
 // Sample flight data
 const flights = [
@@ -94,8 +212,17 @@ export default function KiwiPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-[#0c0f14] text-white">
+      {/* Feedback Panel */}
+      <FeedbackPanel
+        feedbackItems={kiwiFeedback}
+        accentColor="#ff5c3d"
+        agentColor="#00a991"
+      />
+
+      {/* Main Content - adjusted for feedback panel */}
+      <div className="mr-0 lg:mr-[380px] transition-all duration-300">
+        {/* Header */}
+        <header className="bg-[#0c0f14] text-white">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-8">
@@ -327,12 +454,13 @@ export default function KiwiPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#0c0f14] text-white py-8">
-        <div className="max-w-4xl mx-auto px-4 text-center text-sm text-zinc-400">
-          <p>This is a demo page for showcasing bugs. Not affiliated with Kiwi.com</p>
-        </div>
-      </footer>
+        {/* Footer */}
+        <footer className="bg-[#0c0f14] text-white py-8">
+          <div className="max-w-4xl mx-auto px-4 text-center text-sm text-zinc-400">
+            <p>This is a demo page for showcasing bugs. Not affiliated with Kiwi.com</p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

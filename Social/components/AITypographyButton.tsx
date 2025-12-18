@@ -75,21 +75,9 @@ export default function AITypographyButton({
               }}
               animate={
                 isProcessing
-                  ? {
-                      WebkitTextStroke: [
-                        '2px rgba(168, 85, 247, 0.6)',
-                        '2px rgba(59, 130, 246, 0.6)',
-                        '2px rgba(168, 85, 247, 0.6)',
-                      ],
-                    }
+                  ? { opacity: [1, 0.6, 1] }
                   : canProcess
-                  ? {
-                      textShadow: [
-                        '0 0 40px rgba(168, 85, 247, 0.4), 0 0 80px rgba(59, 130, 246, 0.2)',
-                        '0 0 60px rgba(168, 85, 247, 0.6), 0 0 100px rgba(59, 130, 246, 0.3)',
-                        '0 0 40px rgba(168, 85, 247, 0.4), 0 0 80px rgba(59, 130, 246, 0.2)',
-                      ],
-                    }
+                  ? { opacity: [0.8, 1, 0.8] }
                   : {}
               }
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -131,11 +119,9 @@ export default function AITypographyButton({
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundSize: '200% 100%',
+                    animation: 'gradient-shift 1.5s linear infinite',
                   }}
-                  animate={{
-                    backgroundPosition: ['0% 0%', '100% 0%', '0% 0%'],
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                  transition={{ duration: 0.3 }}
                 >
                   AI
                 </motion.div>

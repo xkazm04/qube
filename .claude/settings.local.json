@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(dir /s \"C:\\\\Users\\\\kazim\\\\dac\\\\qube\\\\Social\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(printf:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }
