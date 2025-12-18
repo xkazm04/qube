@@ -430,7 +430,7 @@ export default function KiwiPage() {
                   <div className="flex flex-col items-end">
                     {/* BUG #1: Currency hardcoded to CZK, ignores selector */}
                     <span className="text-2xl font-bold text-[#00a991]">
-                      {flight.price.toLocaleString()} CZK
+                      {flight.price.toLocaleString()} {currency}
                     </span>
                     <button className="mt-2 px-6 py-2 bg-[#00a991] text-white rounded-lg font-medium hover:bg-[#008f7d] transition-colors flex items-center gap-2">
                       Select
