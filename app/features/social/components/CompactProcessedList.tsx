@@ -12,6 +12,7 @@ interface CompactProcessedListProps {
   onSendReply: (feedbackId: string) => void;
   onViewTicket?: (feedback: EvaluatedFeedback) => void;
   onViewRequirement?: (feedback: EvaluatedFeedback) => void;
+  onResolveAll?: () => Promise<void>;
   creatingTicketFor?: string;
   sendingReplyFor?: string;
 }
@@ -31,19 +32,26 @@ export default function CompactProcessedList({
   onSendReply,
   onViewTicket,
   onViewRequirement,
+  onResolveAll,
   creatingTicketFor,
   sendingReplyFor,
 }: CompactProcessedListProps) {
   const [activeCategory, setActiveCategory] = useState<FilterCategory>('all');
   const [isResolvingAll, setIsResolvingAll] = useState(false);
 
-  // Handle resolve all
+  // Handle resolve all - immediate optimistic feedback, no artificial delays
   const handleResolveAll = async () => {
+    if (!onResolveAll) return;
+
     setIsResolvingAll(true);
-    // Simulate resolving all items
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsResolvingAll(false);
-    // In a real implementation, this would update all items to resolved state
+    try {
+      // Execute immediately without artificial delay
+      await onResolveAll();
+    } catch (error) {
+      console.error('Failed to resolve all items:', error);
+    } finally {
+      setIsResolvingAll(false);
+    }
   };
 
   const filteredFeedback = useMemo(() => {
@@ -106,10 +114,11 @@ export default function CompactProcessedList({
           </div>
 
           {/* Resolve All button */}
-          {feedback.length > 0 && (
+          {feedback.length > 0 && onResolveAll && (
             <motion.button
               onClick={handleResolveAll}
               disabled={isResolvingAll}
+              data-testid="resolve-all-btn"
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-sm font-medium transition-colors disabled:opacity-50"
               whileHover={!isResolvingAll ? { scale: 1.02 } : {}}
               whileTap={!isResolvingAll ? { scale: 0.98 } : {}}

@@ -10,7 +10,7 @@ interface SwimlanesViewProps {
   isCollapsed: (laneId: string) => boolean;
   onToggleCollapse: (laneId: string) => void;
   onCardClick: (item: FeedbackItem) => void;
-  onCardDoubleClick: (item: FeedbackItem) => void;
+  onCardDoubleClick?: (item: FeedbackItem) => void;
   renderCard: (item: FeedbackItem) => React.ReactNode;
 }
 

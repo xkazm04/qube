@@ -10,7 +10,7 @@ interface SwimlaneRowProps {
   isCollapsed: boolean;
   onToggle: () => void;
   onCardClick: (item: FeedbackItem) => void;
-  onCardDoubleClick: (item: FeedbackItem) => void;
+  onCardDoubleClick?: (item: FeedbackItem) => void;
   renderCard: (item: FeedbackItem) => React.ReactNode;
 }
 
@@ -47,7 +47,7 @@ export function SwimlaneRow({
                 <div
                   key={item.id}
                   onClick={() => onCardClick(item)}
-                  onDoubleClick={() => onCardDoubleClick(item)}
+                  onDoubleClick={onCardDoubleClick ? () => onCardDoubleClick(item) : undefined}
                   className="flex-shrink-0 w-[300px] cursor-pointer"
                 >
                   {renderCard(item)}

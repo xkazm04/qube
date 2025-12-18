@@ -47,6 +47,7 @@ export function SearchInput({
         value={localValue}
         onChange={e => setLocalValue(e.target.value)}
         placeholder={placeholder}
+        data-testid="filter-search-input"
         className="w-full pl-9 pr-8 py-1.5 text-sm rounded-lg
           bg-[var(--color-surface)] border border-[var(--color-border)]
           text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]
@@ -56,6 +57,7 @@ export function SearchInput({
       {localValue && (
         <button
           onClick={handleClear}
+          data-testid="filter-search-clear-btn"
           className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5
             text-gray-400 hover:text-gray-300 transition-colors"
         >

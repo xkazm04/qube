@@ -1,5 +1,6 @@
 // Kanban Board Types
 import type { LucideIcon } from 'lucide-react';
+import type { DevTeam, CustomerResponseData } from './aiTypes';
 
 export type KanbanChannel =
   | 'email'
@@ -59,6 +60,7 @@ export interface FeedbackAnalysis {
   sentiment: Sentiment;
   suggestedPipeline: 'manual' | 'automatic';
   confidence: number;
+  assignedTeam?: DevTeam;
 }
 
 export interface FeedbackItem {
@@ -74,6 +76,7 @@ export interface FeedbackItem {
   conversation?: ConversationMessage[];
   rating?: number;
   analysis?: FeedbackAnalysis;
+  customerResponse?: CustomerResponseData;
   tags: string[];
   linkedTickets?: string[];
   resolvedAt?: string;
@@ -81,6 +84,9 @@ export interface FeedbackItem {
   contextType?: string;
   appVersion?: string;
   platform?: 'ios' | 'android';
+  // External integration references
+  jiraTicketKey?: string;
+  githubIssueUrl?: string;
 }
 
 export interface KanbanColumnConfig {

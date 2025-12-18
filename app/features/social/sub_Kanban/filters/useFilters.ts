@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useDeferredValue } from 'react';
 import type { FeedbackItem } from '../../lib/kanbanTypes';
 import type { FilterState, FilterField } from './filterTypes';
 import { DEFAULT_FILTER_STATE } from './filterTypes';
@@ -66,6 +66,10 @@ function matchesDateRange(item: FeedbackItem, dateRange: FilterState['dateRange'
 export function useFilters(items: FeedbackItem[]) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTER_STATE);
 
+  // Use deferred value for non-critical filter state to allow urgent updates to interrupt
+  // This prevents the UI from blocking on expensive filter operations
+  const deferredFilters = useDeferredValue(filters);
+
   const setFilter = useCallback(<K extends keyof FilterState>(
     field: K,
     value: FilterState[K]
@@ -90,25 +94,27 @@ export function useFilters(items: FeedbackItem[]) {
     });
   }, []);
 
+  // Use deferred filters for filtering to allow UI to remain responsive
   const filteredItems = useMemo(() => {
     return items.filter(item => {
-      if (!matchesSearch(item, filters.search)) return false;
-      if (filters.channels.length && !filters.channels.includes(item.channel)) return false;
-      if (filters.priorities.length && !filters.priorities.includes(item.priority)) return false;
-      if (filters.statuses.length && !filters.statuses.includes(item.status)) return false;
-      if (filters.sentiments.length) {
+      if (!matchesSearch(item, deferredFilters.search)) return false;
+      if (deferredFilters.channels.length && !deferredFilters.channels.includes(item.channel)) return false;
+      if (deferredFilters.priorities.length && !deferredFilters.priorities.includes(item.priority)) return false;
+      if (deferredFilters.statuses.length && !deferredFilters.statuses.includes(item.status)) return false;
+      if (deferredFilters.sentiments.length) {
         const sentiment = item.analysis?.sentiment;
-        if (!sentiment || !filters.sentiments.includes(sentiment)) return false;
+        if (!sentiment || !deferredFilters.sentiments.includes(sentiment)) return false;
       }
-      if (filters.slaStatuses.length) {
+      if (deferredFilters.slaStatuses.length) {
         const slaStatus = getItemSLAStatus(item);
-        if (!filters.slaStatuses.includes(slaStatus)) return false;
+        if (!deferredFilters.slaStatuses.includes(slaStatus)) return false;
       }
-      if (!matchesDateRange(item, filters.dateRange)) return false;
+      if (!matchesDateRange(item, deferredFilters.dateRange)) return false;
       return true;
     });
-  }, [items, filters]);
+  }, [items, deferredFilters]);
 
+  // Active filter count uses immediate filters for responsive UI feedback
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.search) count++;
@@ -121,6 +127,9 @@ export function useFilters(items: FeedbackItem[]) {
     return count;
   }, [filters]);
 
+  // Indicate if filtering is still pending (deferred value hasn't caught up)
+  const isFiltering = filters !== deferredFilters;
+
   return {
     filters,
     setFilter,
@@ -130,5 +139,6 @@ export function useFilters(items: FeedbackItem[]) {
     activeFilterCount,
     totalCount: items.length,
     filteredCount: filteredItems.length,
+    isFiltering,
   };
 }

@@ -1,12 +1,12 @@
 import type { FeedbackItem } from './kanbanTypes';
 
 export const mockKanbanFeedback: FeedbackItem[] = [
-  // NEW - Email
+  // NEW - Email (just arrived - ok status)
   {
     id: 'fb-001',
     company: 'kiwi',
     channel: 'email',
-    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 min ago - ok
     status: 'new',
     priority: 'critical',
     author: {
@@ -21,12 +21,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['currency', 'localization'],
   },
-  // NEW - X
+  // NEW - X (social has 0.5 multiplier, so critical at 15min becomes warning at 7.5min)
   {
     id: 'fb-002',
     company: 'kiwi',
     channel: 'x',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 min ago - warning for social critical
     status: 'new',
     priority: 'critical',
     author: {
@@ -45,12 +45,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['mobile', 'calendar'],
   },
-  // NEW - Facebook
+  // NEW - Facebook (medium priority with 0.5 multiplier: 4h warning, 12h critical, 24h overdue)
   {
     id: 'fb-003',
     company: 'slevomat',
     channel: 'facebook',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago - ok for medium social
     status: 'new',
     priority: 'medium',
     author: {
@@ -66,12 +66,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['search', 'button'],
   },
-  // NEW - Support Chat
+  // NEW - Support Chat (critical with 0.75 multiplier: 22min warning, 45min critical, 90min overdue)
   {
     id: 'fb-004',
     company: 'kiwi',
     channel: 'support_chat',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(), // 25 min ago - warning
     status: 'new',
     priority: 'critical',
     author: {
@@ -91,12 +91,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     ],
     tags: ['mobile', 'calendar', 'iOS'],
   },
-  // NEW - Trustpilot
+  // NEW - Trustpilot (medium: 8h warning, 24h critical, 48h overdue)
   {
     id: 'fb-005',
     company: 'kiwi',
     channel: 'trustpilot',
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6h ago - ok
     status: 'new',
     priority: 'medium',
     author: {
@@ -111,12 +111,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     rating: 2,
     tags: ['accessibility', 'font-size', 'contrast'],
   },
-  // ANALYZED - App Store
+  // ANALYZED - App Store (app_store has 1.25 multiplier, critical: 37min warning, 75min critical, 150min overdue)
   {
     id: 'fb-006',
     company: 'kiwi',
     channel: 'app_store',
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 min ago - warning
     status: 'analyzed',
     priority: 'critical',
     author: {
@@ -139,12 +139,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['search', 'button', 'iOS'],
   },
-  // ANALYZED - Instagram
+  // ANALYZED - Instagram (social 0.5 multiplier, medium: 4h warning, 12h critical, 24h overdue)
   {
     id: 'fb-007',
     company: 'slevomat',
     channel: 'instagram',
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3h ago - ok
     status: 'analyzed',
     priority: 'medium',
     author: {
@@ -153,9 +153,8 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       followers: 8900,
     },
     content: {
-      body: 'Chtěla jsem vám doporučit super deal na @slevomat_cz ale tlačítko Do košíku je broken 😭 Funguje vám to někomu?',
-      excerpt: 'Chtěla jsem vám doporučit super deal...',
-      translation: 'I wanted to recommend a great deal on @slevomat_cz but the Add to Cart button is broken 😭 Does it work for anyone?',
+      body: 'Chtěla jsem vám doporučit super deal na @slevomat_cz ale tlačítko Do košíku je broken 😭 U wellness pobytů nefunguje vůbec. Funguje vám to někomu?',
+      excerpt: 'Chtěla jsem vám doporučit super deal na @slevomat_cz ale tlačítko Do košíku je broken...',
     },
     contextType: 'Story Mention',
     engagement: {
@@ -168,14 +167,14 @@ export const mockKanbanFeedback: FeedbackItem[] = [
       suggestedPipeline: 'automatic',
       confidence: 0.88,
     },
-    tags: ['cart', 'button', 'Czech'],
+    tags: ['cart', 'button', 'wellness'],
   },
-  // ANALYZED - Email
+  // ANALYZED - Email (high priority: 2h warning, 4h critical, 8h overdue)
   {
     id: 'fb-008',
     company: 'kiwi',
     channel: 'email',
-    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3h ago - warning
     status: 'analyzed',
     priority: 'high',
     author: {
@@ -196,12 +195,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['payment', 'checkout', 'critical'],
   },
-  // MANUAL - X
+  // MANUAL - X (social 0.5 multiplier, high: 1h warning, 2h critical, 4h overdue)
   {
     id: 'fb-009',
     company: 'kiwi',
     channel: 'x',
-    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 90 * 60 * 1000).toISOString(), // 1.5h ago - critical
     status: 'manual',
     priority: 'high',
     author: {
@@ -228,12 +227,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     linkedTickets: ['JIRA-1234'],
     tags: ['api', 'documentation', 'developer'],
   },
-  // MANUAL - Support Chat
+  // MANUAL - Support Chat (support_chat 0.75 multiplier, medium: 6h warning, 18h critical, 36h overdue)
   {
     id: 'fb-010',
     company: 'slevomat',
     channel: 'support_chat',
-    timestamp: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(), // 10h ago - warning
     status: 'manual',
     priority: 'medium',
     author: {
@@ -260,12 +259,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     linkedTickets: ['JIRA-1235'],
     tags: ['voucher', 'discount', 'Czech'],
   },
-  // AUTOMATIC - Facebook
+  // AUTOMATIC - Facebook (social 0.5 multiplier, medium: 4h warning, 12h critical, 24h overdue)
   {
     id: 'fb-011',
     company: 'kiwi',
     channel: 'facebook',
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago - ok
     status: 'automatic',
     priority: 'medium',
     author: {
@@ -288,12 +287,12 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['pricing', 'checkout'],
   },
-  // AUTOMATIC - App Store
+  // AUTOMATIC - App Store (app_store 1.25 multiplier, high: 2.5h warning, 5h critical, 10h overdue)
   {
     id: 'fb-012',
     company: 'slevomat',
     channel: 'app_store',
-    timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
+    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4h ago - warning
     status: 'automatic',
     priority: 'high',
     author: {

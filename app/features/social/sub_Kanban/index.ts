@@ -3,3 +3,6 @@ export { default as KanbanColumn } from './KanbanColumn';
 export { default as KanbanCard } from './KanbanCard';
 export { default as CardMenu } from './CardMenu';
 export { default as CardDetailModal } from './CardDetailModal';
+
+// State providers for optimized re-renders
+export * from './state';

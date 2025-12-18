@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Inbox,
@@ -12,8 +12,9 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import type { FeedbackItem, KanbanColumnConfig } from '../lib/kanbanTypes';
-import type { FeedbackAnalysisResult, AIProcessingStatus } from '../lib/aiTypes';
+import type { FeedbackAnalysisResult, AIProcessingStatus, DevTeam } from '../lib/aiTypes';
 import KanbanCard from './KanbanCard';
+import { TeamIcon } from './TeamIcon';
 
 // Icon mapping for column iconName
 const ColumnIcons: Record<string, LucideIcon> = {
@@ -102,6 +103,20 @@ export default function KanbanColumn({
 
   // Count selected items in this column
   const selectedInColumn = items.filter((item) => selectedIds.has(item.id)).length;
+
+  // Calculate team distribution for this column
+  const teamDistribution = useMemo(() => {
+    const distribution: Partial<Record<DevTeam, number>> = {};
+    items.forEach((item) => {
+      const team = item.analysis?.assignedTeam || aiResults?.get(item.id)?.assignedTeam;
+      if (team) {
+        distribution[team] = (distribution[team] || 0) + 1;
+      }
+    });
+    return Object.entries(distribution)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5); // Show top 5 teams
+  }, [items, aiResults]);
 
   return (
     <div
@@ -236,6 +251,23 @@ export default function KanbanColumn({
           </div>
         )}
       </div>
+
+      {/* Team distribution footer */}
+      {teamDistribution.length > 0 && (
+        <div className="p-2 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[9px] text-[var(--color-text-muted)] mr-1">Teams:</span>
+            {teamDistribution.map(([team, count]) => (
+              <div key={team} className="flex items-center gap-0.5">
+                <TeamIcon team={team as DevTeam} size="xs" />
+                <span className="text-[9px] text-[var(--color-text-muted)]">
+                  {count}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

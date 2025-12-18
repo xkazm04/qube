@@ -11,25 +11,23 @@ const slevomatFeedback: FeedbackItem[] = [
     channel: "facebook",
     icon: "📘",
     author: "Lenka Procházková",
-    time: "2 hours ago",
-    content: "POZOR! Koupila jsem voucher na Slevomatu a až PO zaplacení jsem zjistila, že platí jen do konce příštího týdne! Kde to bylo napsané před nákupem?? 😤",
-    translation: "WARNING! I bought a voucher and only AFTER paying I found out it's valid only until next week! Where was this written before purchase??",
+    time: "2 hodiny",
+    content: "POZOR! Koupila jsem wellness pobyt a až PO zaplacení jsem zjistila, že platí jen do 15.1.! Kde to bylo napsané před nákupem?? Na stránce je napsáno 'Platí do:' ale žádné datum tam není! 😤",
     reactions: { angry: 23, sad: 8 },
-    tag: "📅 Expiry"
+    tag: "📅 Platnost"
   },
   {
     id: "SLEVO-012",
     channel: "support_chat",
     icon: "💬",
     author: "Anna K.",
-    time: "1 hour ago",
+    time: "1 hodina",
     conversation: [
-      { role: "customer", message: "Koupila jsem voucher na saunu a teď jsem zjistila že vyprší za 5 dní! Proč to nebylo vidět před nákupem?" },
-      { role: "agent", message: "Moc se omlouvám. Datum platnosti by mělo být zobrazeno u nabídky..." },
-      { role: "customer", message: "Na stránce nabídky jsem žádné datum expirace neviděla, až v emailu po zaplacení" }
+      { role: "customer", message: "Koupila jsem privátní saunu a teď jsem zjistila že vyprší za 5 dní! Proč to nebylo vidět před nákupem?" },
+      { role: "agent", message: "Moc se omlouvám. Datum platnosti by mělo být zobrazeno přímo u nabídky..." },
+      { role: "customer", message: "Na stránce nabídky jsem žádné datum expirace neviděla, je tam jen 'Platí do:' a pak prázdné místo. Datum jsem viděla až v potvrzovacím emailu!" }
     ],
-    translation: "Customer bought sauna voucher, found out only 5 days validity after purchase. Expiry date not shown on deal page.",
-    tag: "📅 Expiry"
+    tag: "📅 Platnost"
   },
   // Bug #7: Add to Cart Broken (2 items)
   {
@@ -37,25 +35,23 @@ const slevomatFeedback: FeedbackItem[] = [
     channel: "support_chat",
     icon: "💬",
     author: "Petra Nováková",
-    time: "30 min ago",
+    time: "30 minut",
     conversation: [
-      { role: "customer", message: "Snažím se přidat wellness pobyt do košíku ale tlačítko vůbec nereaguje" },
-      { role: "agent", message: "O který pobyt se jedná?" },
-      { role: "customer", message: "Ten romantický wellness pro dva. Zkoušela jsem to i na jiném wellness pobytu - stejný problém. U restaurací to funguje normálně." }
+      { role: "customer", message: "Snažím se přidat romantický wellness pobyt do košíku ale tlačítko 'Do košíku' vůbec nereaguje" },
+      { role: "agent", message: "Zkusila jste obnovit stránku?" },
+      { role: "customer", message: "Ano, několikrát. Zkoušela jsem to i na jiných wellness nabídkách (masáž, sauna) - všude stejný problém. U restaurací a zážitků to funguje normálně." }
     ],
-    translation: "Trying to add wellness stay to cart but button doesn't respond. Same issue on other wellness deals. Restaurant deals work fine.",
-    tag: "🛒 Cart"
+    tag: "🛒 Košík"
   },
   {
     id: "SLEVO-020",
     channel: "twitter",
     icon: "🐦",
     author: "@ZuzkaTravel",
-    time: "15 min ago",
-    content: "Týden se snažím koupit wellness pobyt na @slevomat_cz a pořád nefunguje tlačítko. Support říká že na tom pracují. Týden! 😤 Koupím jinde.",
-    translation: "Been trying to buy wellness stay for a week and button still doesn't work. Support says they're working on it. A week! Will buy elsewhere.",
+    time: "15 minut",
+    content: "Týden se snažím koupit wellness pobyt na @slevomat_cz a pořád nefunguje tlačítko Do košíku. U restaurací funguje, u wellness ne. Support říká že na tom pracují... týden! 😤 Koupím na Zlavomate.",
     engagement: { likes: 15, retweets: 4 },
-    tag: "🛒 Cart",
+    tag: "🛒 Košík",
     priority: "churn_risk"
   },
   // Bug #8: Wrong Discount Percentage (2 items)
@@ -64,22 +60,20 @@ const slevomatFeedback: FeedbackItem[] = [
     channel: "email",
     icon: "📧",
     author: "Martin Dvořák",
-    time: "4 hours ago",
+    time: "4 hodiny",
     subject: "Stížnost - klamavá sleva",
-    excerpt: "Na stránce je uvedena sleva 70%, původní cena 2990 Kč, aktuální 1790 Kč. Ale výpočet: (2990-1790)/2990 = 40%. To není 70%! Považuji to za klamavou reklamu.",
-    translation: "Site shows 70% discount, but calculation shows only 40%. Consider this false advertising.",
-    tag: "💰 Pricing"
+    excerpt: "Na stránce u Romantického wellness pobytu je uvedena sleva 70%, původní cena 2990 Kč, aktuální 1790 Kč. Ale když si to spočítám: (2990-1790)/2990 = 40,1%. To není 70%! Tohle považuji za klamavou reklamu podle zákona o ochraně spotřebitele.",
+    tag: "💰 Cena"
   },
   {
     id: "SLEVO-029",
     channel: "facebook",
     icon: "📘",
     author: "Lucie Benešová",
-    time: "1 hour ago",
-    content: "70%? 😂 Propočítala jsem si váš 'wellness pobyt se slevou 70%' - původní cena 2990, aktuální 1790. To je 40% sleva, ne 70%. Učili jste se matematiku?",
-    translation: "70%? 😂 I calculated your '70% off wellness stay' - original 2990, current 1790. That's 40%, not 70%. Did you learn math?",
+    time: "1 hodina",
+    content: "Sleva -70%? 😂 Propočítala jsem si váš 'Romantický wellness pobyt se slevou 70%' - původní cena 2990, aktuální 1790. To je 40% sleva, ne 70%. A u Relaxační masáže je zas jiné číslo. Učili jste se matematiku?",
     reactions: { haha: 45, angry: 12 },
-    tag: "💰 Pricing",
+    tag: "💰 Cena",
     priority: "viral_risk"
   },
   // Bug #9: Missing Restaurant Location (2 items)
@@ -88,22 +82,20 @@ const slevomatFeedback: FeedbackItem[] = [
     channel: "twitter",
     icon: "🐦",
     author: "@FoodieKarla",
-    time: "3 hours ago",
-    content: "Chtěla jsem koupit ten degustační menu deal na @slevomat_cz ale... kde je ta restaurace vlastně? 😅 Nikde nevidím adresu ani mapu. Help? #praha #foodie",
-    translation: "Wanted to buy the tasting menu deal but... where is the restaurant actually? Can't see address or map anywhere.",
+    time: "3 hodiny",
+    content: "Chtěla jsem koupit Degustační menu pro 2 na @slevomat_cz ale... kde je La Bottega Bistroteka vlastně? 😅 Je tam napsáno 'Adresa:' ale potom prázdno. Nemám crystal ball! #praha #foodie",
     engagement: { likes: 12, retweets: 3 },
-    tag: "📍 Location"
+    tag: "📍 Místo"
   },
   {
     id: "SLEVO-023",
     channel: "email",
     icon: "📧",
-    author: "La Bottega (Partner)",
-    time: "Yesterday",
-    subject: "Chybějící adresa u naší nabídky",
-    excerpt: "Jsme partnerská restaurace. Několik zákazníků nám volalo s dotazem, kde se nacházíme, protože na Slevomatu prý není uvedena adresa. V systému jsme ji vyplnili...",
-    translation: "We're partner restaurant. Customers calling asking where we are - address not shown on Slevomat. We filled it in the system...",
-    tag: "📍 Location",
+    author: "Restaurace La Bottega",
+    time: "Včera",
+    subject: "Chybějící adresa u naší nabídky - zákazníci nás nemohou najít",
+    excerpt: "Jsme partnerská restaurace La Bottega Bistroteka. Dnes nám volalo už 5 zákazníků s dotazem, kde přesně se nacházíme, protože na Slevomatu u našeho Degustačního menu prý není uvedena adresa. V admin systému máme vyplněno 'Dlouhá 39, Praha 1'...",
+    tag: "📍 Místo",
     priority: "partner"
   },
   // Bug #10: Error Messages Wrong Language (2 items)
@@ -113,21 +105,21 @@ const slevomatFeedback: FeedbackItem[] = [
     icon: "⭐",
     author: "Thomas B.",
     location: "Germany",
-    time: "Yesterday",
+    time: "Včera",
     rating: 2,
     title: "Error messages in wrong language",
-    content: "I switched the website to English but error messages appear in Czech! 'Toto pole je povinné' - I had to use Google Translate. If you offer English, errors should be English too.",
-    tag: "🌐 Language"
+    content: "I switched the website to English (EN button in header) but error messages in checkout form still appear in Czech! 'Toto pole je povinné', 'Neplatný email' - I had to use Google Translate to understand what's wrong with my form. If you offer English version, error messages should be in English too!",
+    tag: "🌐 Jazyk"
   },
   {
     id: "SLEVO-024",
     channel: "twitter",
     icon: "🐦",
     author: "@TouristInPrague",
-    time: "2 hours ago",
-    content: "Trying to buy spa voucher on @slevomat_cz but checkout form shows errors in Czech even though I'm on English site 😕 'Neplatný email' - had to Google translate.",
+    time: "2 hodiny",
+    content: "Trying to order on @slevomat_cz with site in English but checkout form validation shows 'Neplatný email', 'Toto pole je povinné' 😕 Please translate your error messages! Had to screenshot and Google translate.",
     engagement: { likes: 5, retweets: 1 },
-    tag: "🌐 Language"
+    tag: "🌐 Jazyk"
   }
 ];
 

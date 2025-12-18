@@ -31,11 +31,11 @@ const XIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 import type { FeedbackItem, KanbanChannel } from '../lib/kanbanTypes';
-import { PRIORITY_DOT_COLORS } from '../lib/kanbanTypes';
 import { getTimeAgo } from '../lib/kanbanMockData';
 import type { FeedbackAnalysisResult, AIProcessingStatus } from '../lib/aiTypes';
 import CardMenu from './CardMenu';
 import { SLABadge } from './sla';
+import { TeamIcon, ResponseIndicator } from './TeamIcon';
 import {
   iconClass,
   opacityClass,
@@ -368,8 +368,12 @@ export default function KanbanCard({
       exit={{ opacity: 0, scale: 0.9, y: -20 }}
       whileHover={{ y: -2 }}
       transition={{
-        layout: { type: 'spring', stiffness: 200, damping: 25, mass: 0.8 },
-        default: { type: 'spring', stiffness: 300, damping: 30 },
+        // Fast, snappy layout animation for instant position updates
+        layout: { type: 'spring', stiffness: 400, damping: 30, mass: 0.5 },
+        // Smooth entry/exit animations
+        default: { type: 'spring', stiffness: 350, damping: 28 },
+        // Quick opacity transitions
+        opacity: { duration: 0.15 },
       }}
     >
       <div
@@ -417,15 +421,12 @@ export default function KanbanCard({
           {/* Header */}
           <div className={`flex justify-between items-center pb-2 mb-2 border-b ${getBorderStyle()}`}>
             <div className={`flex items-center gap-1.5 text-xs ${getChannelHeaderStyle()}`}>
-              <Icon className={iconClass.md} />
-              <span className="font-semibold capitalize">{item.channel.replace('_', ' ')}</span>
-              <span className={item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}>•</span>
+              <span title={item.channel.replace('_', ' ')}>
+                <Icon className={iconClass.md} />
+              </span>
               <span className={item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}>{getTimeAgo(item.timestamp)}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <SLABadge item={item} compact />
-              <div className={`w-2.5 h-2.5 rounded-full ${PRIORITY_DOT_COLORS[item.priority]}`} title={`${item.priority} priority`} />
-            </div>
+            <SLABadge item={item} compact />
           </div>
 
           {/* Channel-specific content */}
@@ -453,6 +454,18 @@ export default function KanbanCard({
                   <span className={`text-[10px] ${item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}`}>
                     {Math.round(aiResult.confidence * 100)}% confidence
                   </span>
+                  {/* Response indicator */}
+                  {aiResult.customerResponse && (
+                    <ResponseIndicator
+                      hasResponse={true}
+                      followUpRequired={aiResult.customerResponse.followUpRequired}
+                      size="xs"
+                    />
+                  )}
+                  {/* Team assignment */}
+                  {aiResult.assignedTeam && (
+                    <TeamIcon team={aiResult.assignedTeam} size="xs" showBadge />
+                  )}
                 </div>
               </motion.div>
             )}
@@ -471,6 +484,18 @@ export default function KanbanCard({
                   {getSentimentIcon(item.analysis.sentiment)}
                   <span className="capitalize">{item.analysis.sentiment}</span>
                 </div>
+              )}
+              {/* Team assignment from analysis */}
+              {item.analysis?.assignedTeam && !aiResult?.assignedTeam && (
+                <TeamIcon team={item.analysis.assignedTeam} size="xs" showBadge />
+              )}
+              {/* Response indicator from customerResponse */}
+              {item.customerResponse && !aiResult?.customerResponse && (
+                <ResponseIndicator
+                  hasResponse={true}
+                  followUpRequired={item.customerResponse.followUpRequired}
+                  size="xs"
+                />
               )}
             </div>
             <div className="relative">
