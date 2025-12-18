@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 
 export type KanbanChannel =
   | 'email'
-  | 'twitter'
+  | 'x'
   | 'facebook'
   | 'support_chat'
   | 'trustpilot'
@@ -137,7 +137,7 @@ export const KANBAN_COLUMNS: KanbanColumnConfig[] = [
 
 export const CHANNEL_ICON_NAMES: Record<KanbanChannel, string> = {
   email: 'mail',
-  twitter: 'twitter',
+  x: 'x',
   facebook: 'facebook',
   support_chat: 'message-circle',
   trustpilot: 'star',

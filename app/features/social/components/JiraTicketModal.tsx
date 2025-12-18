@@ -4,6 +4,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Ticket, User, Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import type { JiraTicket } from '../lib/types';
+import { useFocusTrap } from '../lib/useFocusTrap';
 
 interface JiraTicketModalProps {
   isOpen: boolean;
@@ -26,6 +27,12 @@ const statusConfig = {
 };
 
 export default function JiraTicketModal({ isOpen, onClose, ticket }: JiraTicketModalProps) {
+  const focusTrapRef = useFocusTrap<HTMLDivElement>({
+    isActive: isOpen && ticket !== null,
+    onEscape: onClose,
+    autoFocusSelector: '[data-testid="jira-ticket-close-btn"]',
+  });
+
   if (!ticket) return null;
 
   const priority = priorityConfig[ticket.priority];
@@ -48,10 +55,14 @@ export default function JiraTicketModal({ isOpen, onClose, ticket }: JiraTicketM
           {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
+              ref={focusTrapRef}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl bg-gray-900 border border-gray-700/50 shadow-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="jira-ticket-modal-title"
             >
               {/* Header */}
               <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-700/50 bg-gray-900/95 backdrop-blur-sm">
@@ -60,13 +71,15 @@ export default function JiraTicketModal({ isOpen, onClose, ticket }: JiraTicketM
                     <Ticket className="w-5 h-5 text-purple-400" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Jira Ticket</h2>
+                    <h2 id="jira-ticket-modal-title" className="text-xl font-bold text-white">Jira Ticket</h2>
                     <p className="text-sm text-gray-400">{ticket.key}</p>
                   </div>
                 </div>
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                  data-testid="jira-ticket-close-header-btn"
+                  aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -94,7 +107,7 @@ export default function JiraTicketModal({ isOpen, onClose, ticket }: JiraTicketM
                 {/* Metadata Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg bg-gray-800/40 border border-gray-700/40">
-                    <div className="flex items-center gap-2 text-gray-400 mb-2">
+                    <div className="flex items-center gap-2 text-gray-300 mb-2">
                       <User className="w-4 h-4" />
                       <span className="text-sm">Reporter</span>
                     </div>
@@ -102,7 +115,7 @@ export default function JiraTicketModal({ isOpen, onClose, ticket }: JiraTicketM
                   </div>
 
                   <div className="p-4 rounded-lg bg-gray-800/40 border border-gray-700/40">
-                    <div className="flex items-center gap-2 text-gray-400 mb-2">
+                    <div className="flex items-center gap-2 text-gray-300 mb-2">
                       <Calendar className="w-4 h-4" />
                       <span className="text-sm">Created</span>
                     </div>
@@ -182,6 +195,7 @@ export default function JiraTicketModal({ isOpen, onClose, ticket }: JiraTicketM
                 <button
                   onClick={onClose}
                   className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-colors"
+                  data-testid="jira-ticket-close-btn"
                 >
                   Close
                 </button>

@@ -32,10 +32,10 @@ export const mockRawFeedback: RawFeedback[] = [
     },
   },
 
-  // Twitter feedback
+  // X feedback
   {
     id: 'tw-1',
-    channel: 'twitter',
+    channel: 'x',
     author: 'DevTech Review',
     authorHandle: '@devtechreview',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=devtech',
@@ -45,7 +45,7 @@ export const mockRawFeedback: RawFeedback[] = [
   },
   {
     id: 'tw-2',
-    channel: 'twitter',
+    channel: 'x',
     author: 'Code Ninja',
     authorHandle: '@codeninja_dev',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ninja',
@@ -55,7 +55,7 @@ export const mockRawFeedback: RawFeedback[] = [
   },
   {
     id: 'tw-3',
-    channel: 'twitter',
+    channel: 'x',
     author: 'Startup Weekly',
     authorHandle: '@startupweekly',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=startup',
@@ -69,7 +69,7 @@ export const mockRawFeedback: RawFeedback[] = [
   },
   {
     id: 'tw-4',
-    channel: 'twitter',
+    channel: 'x',
     author: 'React Developer',
     authorHandle: '@react_dev_jane',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane',
@@ -241,7 +241,7 @@ export const mockTicketTemplates: Record<string, { title: string; description: s
 };
 
 // Helper functions
-export function getRawFeedbackByChannel(channel: 'all' | 'facebook' | 'twitter' | 'email'): RawFeedback[] {
+export function getRawFeedbackByChannel(channel: 'all' | 'facebook' | 'x' | 'email'): RawFeedback[] {
   if (channel === 'all') {
     return mockRawFeedback;
   }
@@ -255,7 +255,7 @@ export function getChannelCounts(): Record<string, number> {
   return {
     all: mockRawFeedback.length,
     facebook: mockRawFeedback.filter(fb => fb.channel === 'facebook').length,
-    twitter: mockRawFeedback.filter(fb => fb.channel === 'twitter').length,
+    x: mockRawFeedback.filter(fb => fb.channel === 'x').length,
     email: mockRawFeedback.filter(fb => fb.channel === 'email').length,
   };
 }
@@ -296,7 +296,7 @@ export const mockEvaluatedFeedback: EvaluatedFeedback[] = [
   {
     id: 'eval-demo-1',
     originalFeedbackId: 'demo-1',
-    channel: 'twitter',
+    channel: 'x',
     author: 'Alex Developer',
     authorHandle: '@alexdev',
     authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex',

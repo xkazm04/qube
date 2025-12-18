@@ -21,7 +21,7 @@ export default function SimplifiedRawFeedbackList({
       <div className="flex items-center gap-2 mb-4">
         <Inbox className="w-5 h-5 text-gray-400" />
         <h2 className="text-lg font-semibold text-gray-200">Raw Feedback</h2>
-        <span className="text-sm text-gray-500">({feedback.length})</span>
+        <span className="text-sm text-gray-400">({feedback.length})</span>
       </div>
 
       {/* Feedback list */}
@@ -32,11 +32,11 @@ export default function SimplifiedRawFeedbackList({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-12 text-gray-500"
+              className="flex flex-col items-center justify-center py-12 text-gray-400"
             >
               <Inbox className="w-12 h-12 mb-3 opacity-30" />
               <p className="text-sm">No pending feedback</p>
-              <p className="text-xs text-gray-600 mt-1">All items have been processed</p>
+              <p className="text-xs text-gray-500 mt-1">All items have been processed</p>
             </motion.div>
           ) : (
             feedback.map((fb, index) => (

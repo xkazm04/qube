@@ -106,19 +106,19 @@ export default function RawFeedbackItem({ feedback, index, isExiting }: RawFeedb
           <ChannelIcon className={`w-4 h-4 ${channel.iconClass}`} />
           <span className="text-sm font-medium text-gray-200">{feedback.author}</span>
           {feedback.authorHandle && (
-            <span className="text-xs text-gray-500">{feedback.authorHandle}</span>
+            <span className="text-xs text-gray-400">{feedback.authorHandle}</span>
           )}
         </div>
 
         {/* Right side - Time and external link */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">{formatTimeAgo(feedback.timestamp)}</span>
+          <span className="text-xs text-gray-400">{formatTimeAgo(feedback.timestamp)}</span>
           {feedback.url && (
             <a
               href={feedback.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded text-gray-500 hover:text-white hover:bg-gray-700/50 transition-colors"
+              className="p-1.5 rounded text-gray-400 hover:text-white hover:bg-gray-700/50 transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
@@ -130,12 +130,12 @@ export default function RawFeedbackItem({ feedback, index, isExiting }: RawFeedb
       {feedback.originalPost && (
         <div className="mb-3 p-3 rounded-lg bg-gray-800/40 border border-gray-700/30">
           <div className="flex items-start gap-2">
-            <Quote className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+            <Quote className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs text-gray-500 mb-1">
-                Replying to <span className="text-gray-400">{feedback.originalPost.author}</span>
+              <p className="text-xs text-gray-400 mb-1">
+                Replying to <span className="text-gray-300">{feedback.originalPost.author}</span>
               </p>
-              <p className="text-sm text-gray-400 line-clamp-2">
+              <p className="text-sm text-gray-300 line-clamp-2">
                 {feedback.originalPost.content}
               </p>
             </div>

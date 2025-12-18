@@ -4,14 +4,12 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
-  Twitter,
   Facebook,
   MessageCircle,
   Star,
   Smartphone,
   Instagram,
   MoreHorizontal,
-  Check,
   Frown,
   Meh,
   ThumbsUp,
@@ -20,16 +18,35 @@ import {
   User,
   Loader2,
 } from 'lucide-react';
+
+// Custom X (formerly Twitter) icon component
+const XIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 import type { FeedbackItem, KanbanChannel } from '../lib/kanbanTypes';
 import { PRIORITY_DOT_COLORS } from '../lib/kanbanTypes';
 import { getTimeAgo } from '../lib/kanbanMockData';
 import type { FeedbackAnalysisResult, AIProcessingStatus } from '../lib/aiTypes';
 import CardMenu from './CardMenu';
+import { SLABadge } from './sla';
+import {
+  iconClass,
+  opacityClass,
+  radius,
+  transition,
+} from '@/app/lib/design-tokens';
 
 // Channel icon component map
 const ChannelIcon: Record<KanbanChannel, React.FC<{ className?: string }>> = {
   email: Mail,
-  twitter: Twitter,
+  x: XIcon,
   facebook: Facebook,
   support_chat: MessageCircle,
   trustpilot: Star,
@@ -41,11 +58,13 @@ interface KanbanCardProps {
   item: FeedbackItem;
   isDragging?: boolean;
   isSelected?: boolean;
+  isProcessing?: boolean;
   processingStatus?: AIProcessingStatus;
   aiResult?: FeedbackAnalysisResult;
   onDragStart?: (e: React.DragEvent, item: FeedbackItem) => void;
   onDragEnd?: (e: React.DragEvent) => void;
   onClick?: (item: FeedbackItem) => void;
+  onDoubleClick?: (item: FeedbackItem) => void;
   onRightClick?: (item: FeedbackItem, e: React.MouseEvent) => void;
   onAction?: (action: string, item: FeedbackItem) => void;
 }
@@ -54,11 +73,13 @@ export default function KanbanCard({
   item,
   isDragging = false,
   isSelected = false,
+  isProcessing = false,
   processingStatus,
   aiResult,
   onDragStart,
   onDragEnd,
   onClick,
+  onDoubleClick,
   onRightClick,
   onAction,
 }: KanbanCardProps) {
@@ -81,32 +102,55 @@ export default function KanbanCard({
 
   const Icon = ChannelIcon[item.channel];
 
-  // Channel-specific card styles that emulate platform aesthetics
+  // Channel-specific card styles - using shadows instead of borders, border on selection
   const getChannelCardStyle = () => {
+    const baseStyle = 'rounded-xl shadow-sm hover:shadow-md';
     switch (item.channel) {
       case 'email':
-        return 'bg-white dark:bg-slate-900 border-l-4 border-l-blue-500 rounded-sm shadow-md hover:shadow-blue-500/20';
-      case 'twitter':
-        return 'bg-black border border-gray-800 rounded-2xl hover:border-gray-700';
+        return `${baseStyle} bg-white dark:bg-slate-900 shadow-blue-500/10 hover:shadow-blue-500/20`;
+      case 'x':
+        return `${baseStyle} bg-black shadow-gray-500/10 hover:shadow-gray-500/20`;
       case 'facebook':
-        return 'bg-white dark:bg-[#242526] border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md';
+        return `${baseStyle} bg-white dark:bg-[#242526] shadow-indigo-500/10 hover:shadow-indigo-500/20`;
       case 'support_chat':
-        return 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200 dark:border-green-800 rounded-2xl rounded-bl-sm';
+        return `${baseStyle} bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 shadow-green-500/10 hover:shadow-green-500/20`;
       case 'trustpilot':
-        return 'bg-[#00b67a]/5 dark:bg-[#00b67a]/10 border border-[#00b67a]/30 rounded-lg hover:border-[#00b67a]/50';
+        return `${baseStyle} bg-[#00b67a]/5 dark:bg-[#00b67a]/10 shadow-emerald-500/10 hover:shadow-emerald-500/20`;
       case 'app_store':
-        return 'bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 border border-gray-200 dark:border-gray-700 rounded-xl';
+        return `${baseStyle} bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 shadow-purple-500/10 hover:shadow-purple-500/20`;
       case 'instagram':
-        return 'bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 border border-pink-200 dark:border-pink-800/50 rounded-xl';
+        return `${baseStyle} bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 shadow-pink-500/10 hover:shadow-pink-500/20`;
       default:
-        return 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg';
+        return `${baseStyle} bg-white dark:bg-gray-900 shadow-gray-500/10 hover:shadow-gray-500/20`;
+    }
+  };
+
+  // Get background icon color based on channel
+  const getBackgroundIconColor = () => {
+    switch (item.channel) {
+      case 'email':
+        return 'text-blue-500';
+      case 'x':
+        return 'text-gray-400';
+      case 'facebook':
+        return 'text-[#1877f2]';
+      case 'support_chat':
+        return 'text-green-500';
+      case 'trustpilot':
+        return 'text-[#00b67a]';
+      case 'app_store':
+        return 'text-purple-500';
+      case 'instagram':
+        return 'text-pink-500';
+      default:
+        return 'text-gray-400';
     }
   };
 
   // Channel-specific header styling
   const getChannelHeaderStyle = () => {
     switch (item.channel) {
-      case 'twitter':
+      case 'x':
         return 'text-white';
       case 'email':
         return 'text-blue-600 dark:text-blue-400';
@@ -127,15 +171,15 @@ export default function KanbanCard({
     switch (sentiment) {
       case 'angry':
       case 'frustrated':
-        return <Frown className="w-3 h-3 text-red-400" />;
+        return <Frown className={`${iconClass.xs} text-red-400`} />;
       case 'disappointed':
-        return <Meh className="w-3 h-3 text-orange-400" />;
+        return <Meh className={`${iconClass.xs} text-orange-400`} />;
       case 'constructive':
-        return <Lightbulb className="w-3 h-3 text-green-400" />;
+        return <Lightbulb className={`${iconClass.xs} text-green-400`} />;
       case 'helpful':
-        return <ThumbsUp className="w-3 h-3 text-green-400" />;
+        return <ThumbsUp className={`${iconClass.xs} text-green-400`} />;
       default:
-        return <Meh className="w-3 h-3 text-gray-400" />;
+        return <Meh className={`${iconClass.xs} text-gray-400`} />;
     }
   };
 
@@ -156,11 +200,11 @@ export default function KanbanCard({
           </div>
         );
 
-      case 'twitter':
+      case 'x':
         return (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white text-xs font-bold">
+              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold">
                 {item.author.name.charAt(0)}
               </div>
               <div>
@@ -272,12 +316,12 @@ export default function KanbanCard({
       ? 'ring-1 ring-yellow-500'
       : '';
 
-  // Selection and processing state styling
+  // Selection state styling - use border instead of ring, no checkmark
   const getSelectionClass = () => {
     if (isSelected) {
-      return 'ring-2 ring-blue-500 ring-offset-2 ring-offset-[var(--color-background)]';
+      return 'border-2 border-blue-500';
     }
-    return '';
+    return 'border-2 border-transparent';
   };
 
   const getProcessingClass = () => {
@@ -293,22 +337,22 @@ export default function KanbanCard({
     return '';
   };
 
-  // Classification badge colors
+  // Classification badge colors - using design tokens for consistent opacity
   const getClassificationColor = (classification: string) => {
     switch (classification) {
       case 'bug':
-        return 'bg-red-500/20 text-red-300 border border-red-500/30';
+        return `bg-red-500${opacityClass.default} text-red-300 border border-red-500${opacityClass.moderate}`;
       case 'feature':
-        return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+        return `bg-blue-500${opacityClass.default} text-blue-300 border border-blue-500${opacityClass.moderate}`;
       case 'clarification':
-        return 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30';
+        return `bg-yellow-500${opacityClass.default} text-yellow-300 border border-yellow-500${opacityClass.moderate}`;
       default:
-        return 'bg-gray-500/20 text-gray-300 border border-gray-500/30';
+        return `bg-gray-500${opacityClass.default} text-gray-300 border border-gray-500${opacityClass.moderate}`;
     }
   };
 
   const getBorderStyle = () => {
-    return item.channel === 'twitter' ? 'border-gray-800' : 'border-gray-200 dark:border-gray-700';
+    return item.channel === 'x' ? 'border-gray-800' : 'border-gray-200 dark:border-gray-700';
   };
 
   return (
@@ -333,6 +377,7 @@ export default function KanbanCard({
         onDragStart={handleDragStart}
         onDragEnd={onDragEnd}
         onClick={() => onClick?.(item)}
+        onDoubleClick={() => onDoubleClick?.(item)}
         onContextMenu={handleContextMenu}
         className={`
           relative group cursor-grab active:cursor-grabbing
@@ -344,19 +389,12 @@ export default function KanbanCard({
           ${getProcessingClass()}
         `}
       >
-        {/* Selection indicator */}
-        <AnimatePresence>
-          {isSelected && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              className="absolute top-2 left-2 z-10 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center shadow-lg"
-            >
-              <Check className="w-3 h-3 text-white" strokeWidth={3} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Background channel icon - subtle watermark effect */}
+        <div
+          className={`absolute bottom-2 right-2 opacity-[0.06] group-hover:opacity-[0.12] transition-opacity duration-300 pointer-events-none ${getBackgroundIconColor()}`}
+        >
+          <Icon className="w-24 h-24" />
+        </div>
 
         {/* Processing overlay */}
         <AnimatePresence>
@@ -365,26 +403,29 @@ export default function KanbanCard({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 z-20 flex items-center justify-center backdrop-blur-sm"
+              className={`absolute inset-0 bg-black${opacityClass.strong} z-20 flex items-center justify-center backdrop-blur-sm`}
             >
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+                <Loader2 className={`${iconClass.xl} text-blue-400 animate-spin`} />
                 <span className="text-xs text-white font-medium">Analyzing...</span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className={`p-3 ${isSelected ? 'pl-8' : ''}`}>
+        <div className="p-3 relative z-10">
           {/* Header */}
           <div className={`flex justify-between items-center pb-2 mb-2 border-b ${getBorderStyle()}`}>
             <div className={`flex items-center gap-1.5 text-xs ${getChannelHeaderStyle()}`}>
-              <Icon className="w-4 h-4" />
+              <Icon className={iconClass.md} />
               <span className="font-semibold capitalize">{item.channel.replace('_', ' ')}</span>
-              <span className={item.channel === 'twitter' ? 'text-gray-500' : 'text-gray-400'}>•</span>
-              <span className={item.channel === 'twitter' ? 'text-gray-500' : 'text-gray-400'}>{getTimeAgo(item.timestamp)}</span>
+              <span className={item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}>•</span>
+              <span className={item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}>{getTimeAgo(item.timestamp)}</span>
             </div>
-            <div className={`w-2.5 h-2.5 rounded-full ${PRIORITY_DOT_COLORS[item.priority]}`} title={`${item.priority} priority`} />
+            <div className="flex items-center gap-2">
+              <SLABadge item={item} compact />
+              <div className={`w-2.5 h-2.5 rounded-full ${PRIORITY_DOT_COLORS[item.priority]}`} title={`${item.priority} priority`} />
+            </div>
           </div>
 
           {/* Channel-specific content */}
@@ -399,11 +440,17 @@ export default function KanbanCard({
                 exit={{ opacity: 0, height: 0 }}
                 className={`mt-2 pt-2 border-t ${getBorderStyle()}`}
               >
+                {/* AI Generated Title */}
+                {aiResult.title && (
+                  <div className={`text-sm font-semibold mb-2 ${item.channel === 'x' ? 'text-white' : 'text-gray-900 dark:text-gray-100'}`}>
+                    {aiResult.title}
+                  </div>
+                )}
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase ${getClassificationColor(aiResult.classification)}`}>
                     {aiResult.classification}
                   </span>
-                  <span className={`text-[10px] ${item.channel === 'twitter' ? 'text-gray-500' : 'text-gray-400'}`}>
+                  <span className={`text-[10px] ${item.channel === 'x' ? 'text-gray-500' : 'text-gray-400'}`}>
                     {Math.round(aiResult.confidence * 100)}% confidence
                   </span>
                 </div>
@@ -415,7 +462,7 @@ export default function KanbanCard({
           <div className={`flex justify-between items-center pt-2 mt-2 border-t ${getBorderStyle()}`}>
             <div className="flex gap-2 flex-wrap items-center">
               {item.analysis && (
-                <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-medium">
+                <span className={`text-[10px] px-2 py-0.5 ${radius.sm} bg-purple-500${opacityClass.default} text-purple-300 font-medium`}>
                   {item.analysis.bugTag}
                 </span>
               )}
@@ -432,14 +479,15 @@ export default function KanbanCard({
                   e.stopPropagation();
                   setMenuOpen(!menuOpen);
                 }}
-                className={`p-1 rounded transition-colors ${
-                  item.channel === 'twitter'
+                className={`p-1 ${radius.sm} ${transition.colors} ${
+                  item.channel === 'x'
                     ? 'text-gray-500 hover:bg-gray-800 hover:text-gray-300'
                     : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-200'
                 }`}
                 aria-label="Card actions"
+                data-testid={`kanban-card-menu-${item.id}`}
               >
-                <MoreHorizontal className="w-4 h-4" />
+                <MoreHorizontal className={iconClass.md} />
               </button>
               {menuOpen && (
                 <CardMenu
@@ -457,14 +505,14 @@ export default function KanbanCard({
 
         {/* Resolved indicator */}
         {item.status === 'done' && item.resolvedBy && (
-          <div className="absolute top-2 right-8 text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 flex items-center gap-1">
-            {item.resolvedBy === 'ai' ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
+          <div className={`absolute top-2 right-8 text-[10px] px-1.5 py-0.5 ${radius.sm} bg-green-500${opacityClass.default} text-green-400 flex items-center gap-1`}>
+            {item.resolvedBy === 'ai' ? <Bot className={iconClass.xs} /> : <User className={iconClass.xs} />}
             <span>Resolved</span>
           </div>
         )}
 
         {/* Right-click hint */}
-        <div className={`absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] ${item.channel === 'twitter' ? 'text-gray-600' : 'text-gray-400'}`}>
+        <div className={`absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] ${item.channel === 'x' ? 'text-gray-600' : 'text-gray-400'}`}>
           Right-click to select
         </div>
       </div>

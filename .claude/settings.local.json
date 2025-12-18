@@ -5,7 +5,9 @@
       "Bash(npm install:*)",
       "Bash(printf:*)",
       "Bash(npm run build:*)",
-      "WebFetch(domain:tanstack.com)"
+      "WebFetch(domain:tanstack.com)",
+      "Bash(tree:*)",
+      "Bash(del \"C:\\\\Users\\\\kazim\\\\dac\\\\qube\\\\my-app\\\\app\\\\features\\\\social\\\\sub_Kanban\\\\cards\\\\TwitterCardContent.tsx\")"
     ]
   }
 }

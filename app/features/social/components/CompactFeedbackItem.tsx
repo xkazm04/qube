@@ -7,7 +7,6 @@ import {
   Lightbulb,
   MessageCircle,
   Facebook,
-  Twitter,
   Mail,
   ChevronDown,
   ChevronUp,
@@ -17,7 +16,27 @@ import {
   Clock,
   FileCode,
 } from 'lucide-react';
+
+// Custom X (formerly Twitter) icon component
+const XIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 import type { EvaluatedFeedback } from '../lib/types';
+import {
+  iconClass,
+  opacityClass,
+  priorityDot as priorityDotColors,
+  card,
+  radius,
+  transition,
+} from '@/app/lib/design-tokens';
 
 interface CompactFeedbackItemProps {
   feedback: EvaluatedFeedback;
@@ -30,24 +49,21 @@ interface CompactFeedbackItemProps {
   isSendingReply?: boolean;
 }
 
+// Using design tokens for consistent styling
 const categoryConfig = {
-  bug: { icon: Bug, color: 'text-red-400', bg: 'bg-red-500/10', dot: 'bg-red-400' },
-  proposal: { icon: Lightbulb, color: 'text-amber-400', bg: 'bg-amber-500/10', dot: 'bg-amber-400' },
-  feedback: { icon: MessageCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10', dot: 'bg-emerald-400' },
+  bug: { icon: Bug, color: 'text-red-400', bg: `bg-red-500${opacityClass.subtle}`, dot: 'bg-red-400' },
+  proposal: { icon: Lightbulb, color: 'text-amber-400', bg: `bg-amber-500${opacityClass.subtle}`, dot: 'bg-amber-400' },
+  feedback: { icon: MessageCircle, color: 'text-emerald-400', bg: `bg-emerald-500${opacityClass.subtle}`, dot: 'bg-emerald-400' },
 };
 
 const channelIcons = {
   facebook: Facebook,
-  twitter: Twitter,
+  x: XIcon,
   email: Mail,
 };
 
-const priorityDots = {
-  low: 'bg-gray-400',
-  medium: 'bg-amber-400',
-  high: 'bg-orange-400',
-  critical: 'bg-red-400',
-};
+// Using design token for priority colors
+const priorityDots = priorityDotColors;
 
 function formatTimeAgo(date: Date): string {
   const now = new Date();
@@ -90,7 +106,7 @@ export default function CompactFeedbackItem({
   const category = categoryConfig[feedback.category];
   const CategoryIcon = category.icon;
   const ChannelIcon = channelIcons[feedback.channel];
-  const priorityDot = priorityDots[feedback.priority];
+  const priorityDotColor = priorityDots[feedback.priority];
 
   const hasTicket = !!feedback.ticket;
   const hasReply = !!feedback.reply;
@@ -102,7 +118,8 @@ export default function CompactFeedbackItem({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="rounded-lg border border-gray-700/40 bg-gray-800/20 hover:bg-gray-800/40 transition-colors"
+      className={`${radius.lg} border ${card.border} ${card.bg} hover:${card.bgElevated} ${transition.colors}`}
+      data-testid={`feedback-item-${feedback.originalFeedbackId}`}
     >
       {/* Collapsed view */}
       <div
@@ -119,9 +136,9 @@ export default function CompactFeedbackItem({
       >
         {/* Priority + Category indicator */}
         <div className="flex items-center gap-2">
-          <div className={`w-1.5 h-1.5 rounded-full ${priorityDot}`} />
-          <div className={`p-1.5 rounded ${category.bg}`}>
-            <CategoryIcon className={`w-3.5 h-3.5 ${category.color}`} />
+          <div className={`w-1.5 h-1.5 rounded-full ${priorityDotColor}`} />
+          <div className={`p-1.5 ${radius.sm} ${category.bg}`}>
+            <CategoryIcon className={`${iconClass.sm} ${category.color}`} />
           </div>
         </div>
 
@@ -130,8 +147,8 @@ export default function CompactFeedbackItem({
           <div className="text-sm font-medium text-gray-200 truncate">
             {feedback.summary}
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
-            <ChannelIcon className="w-3 h-3" />
+          <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
+            <ChannelIcon className={iconClass.xs} />
             <span className="truncate">{feedback.author}</span>
             <span>•</span>
             <span>{formatTimeAgo(feedback.timestamp)}</span>
@@ -144,10 +161,11 @@ export default function CompactFeedbackItem({
           {feedback.category === 'bug' && (
             <button
               onClick={handleRequirementClick}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 transition-colors"
+              className={`flex items-center gap-1 px-2 py-1 ${radius.sm} bg-blue-500${opacityClass.subtle} hover:bg-blue-500${opacityClass.default} text-blue-400 ${transition.colors}`}
               title="View Claude Code requirement"
+              data-testid={`feedback-req-btn-${feedback.originalFeedbackId}`}
             >
-              <FileCode className="w-3 h-3" />
+              <FileCode className={iconClass.xs} />
               <span className="text-xs">REQ</span>
             </button>
           )}
@@ -156,31 +174,32 @@ export default function CompactFeedbackItem({
           {hasTicket && (
             <button
               onClick={handleTicketClick}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-colors"
+              className={`flex items-center gap-1 px-2 py-1 ${radius.sm} bg-purple-500${opacityClass.subtle} hover:bg-purple-500${opacityClass.default} text-purple-400 ${transition.colors}`}
               title="View Jira ticket"
+              data-testid={`feedback-ticket-btn-${feedback.originalFeedbackId}`}
             >
-              <Ticket className="w-3 h-3" />
+              <Ticket className={iconClass.xs} />
               <span className="text-xs font-mono">{feedback.ticket?.key}</span>
             </button>
           )}
 
           {replySent && (
-            <div className="p-1 rounded bg-emerald-500/10">
-              <Check className="w-3 h-3 text-emerald-400" />
+            <div className={`p-1 ${radius.sm} bg-emerald-500${opacityClass.subtle}`}>
+              <Check className={`${iconClass.xs} text-emerald-400`} />
             </div>
           )}
           {hasReply && !replySent && (
-            <div className="p-1 rounded bg-amber-500/10">
-              <Clock className="w-3 h-3 text-amber-400" />
+            <div className={`p-1 ${radius.sm} bg-amber-500${opacityClass.subtle}`}>
+              <Clock className={`${iconClass.xs} text-amber-400`} />
             </div>
           )}
 
           {/* Expand icon */}
-          <div className="text-gray-500">
+          <div className="text-gray-400">
             {isExpanded ? (
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className={iconClass.md} />
             ) : (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className={iconClass.md} />
             )}
           </div>
         </div>
@@ -199,7 +218,7 @@ export default function CompactFeedbackItem({
             <div className="px-3 pb-3 pt-0 space-y-3 border-t border-gray-700/30">
               {/* Original message */}
               <div className="text-xs">
-                <div className="text-gray-500 mb-1">Original message:</div>
+                <div className="text-gray-400 mb-1">Original message:</div>
                 <div className="text-gray-300 bg-gray-900/40 rounded p-2">
                   {feedback.content}
                 </div>
@@ -207,41 +226,41 @@ export default function CompactFeedbackItem({
 
               {/* Suggested action */}
               <div className="text-xs">
-                <div className="text-gray-500 mb-1">Suggested action:</div>
-                <div className="text-gray-400">{feedback.suggestedAction}</div>
+                <div className="text-gray-400 mb-1">Suggested action:</div>
+                <div className="text-gray-300">{feedback.suggestedAction}</div>
               </div>
 
               {/* Ticket details */}
               {feedback.ticket && (
-                <div className="p-2 rounded bg-purple-500/10 border border-purple-500/20">
+                <div className={`p-2 ${radius.sm} bg-purple-500${opacityClass.subtle} border border-purple-500${opacityClass.default}`}>
                   <div className="flex items-center gap-2 mb-1">
-                    <Ticket className="w-3.5 h-3.5 text-purple-400" />
+                    <Ticket className={`${iconClass.sm} text-purple-400`} />
                     <span className="text-xs font-medium text-purple-300">
                       {feedback.ticket.key}
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-400">
+                    <span className={`text-[10px] px-1.5 py-0.5 ${radius.sm} bg-gray-700/50 text-gray-400`}>
                       {feedback.ticket.status}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-400">{feedback.ticket.title}</div>
+                  <div className="text-xs text-gray-300">{feedback.ticket.title}</div>
                 </div>
               )}
 
               {/* Reply details */}
               {feedback.reply && (
-                <div className="p-2 rounded bg-blue-500/10 border border-blue-500/20">
+                <div className={`p-2 ${radius.sm} bg-blue-500${opacityClass.subtle} border border-blue-500${opacityClass.default}`}>
                   <div className="flex items-center gap-2 mb-1">
-                    <Send className="w-3.5 h-3.5 text-blue-400" />
+                    <Send className={`${iconClass.sm} text-blue-400`} />
                     <span className="text-xs font-medium text-blue-300">Reply</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                    <span className={`text-[10px] px-1.5 py-0.5 ${radius.sm} ${
                       feedback.reply.status === 'sent'
-                        ? 'bg-emerald-500/20 text-emerald-400'
+                        ? `bg-emerald-500${opacityClass.default} text-emerald-400`
                         : 'bg-gray-700/50 text-gray-400'
                     }`}>
                       {feedback.reply.status}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-400">{feedback.reply.content}</div>
+                  <div className="text-xs text-gray-300">{feedback.reply.content}</div>
                 </div>
               )}
 
@@ -251,9 +270,10 @@ export default function CompactFeedbackItem({
                   <button
                     onClick={() => onCreateTicket(feedback.originalFeedbackId)}
                     disabled={isCreatingTicket}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-medium transition-colors disabled:opacity-50"
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 ${radius.sm} bg-purple-500${opacityClass.default} hover:bg-purple-500${opacityClass.moderate} text-purple-300 text-xs font-medium ${transition.colors} disabled:opacity-50`}
+                    data-testid={`feedback-create-ticket-btn-${feedback.originalFeedbackId}`}
                   >
-                    <Ticket className="w-3.5 h-3.5" />
+                    <Ticket className={iconClass.sm} />
                     Create Ticket
                   </button>
                 )}
@@ -261,9 +281,10 @@ export default function CompactFeedbackItem({
                   <button
                     onClick={() => onSendReply(feedback.originalFeedbackId)}
                     disabled={isSendingReply}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 text-xs font-medium transition-colors disabled:opacity-50"
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 ${radius.sm} bg-blue-500${opacityClass.default} hover:bg-blue-500${opacityClass.moderate} text-blue-300 text-xs font-medium ${transition.colors} disabled:opacity-50`}
+                    data-testid={`feedback-send-reply-btn-${feedback.originalFeedbackId}`}
                   >
-                    <Send className="w-3.5 h-3.5" />
+                    <Send className={iconClass.sm} />
                     Send Reply
                   </button>
                 )}

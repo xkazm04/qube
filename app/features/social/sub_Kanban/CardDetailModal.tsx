@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Mail,
-  Twitter,
   Facebook,
   MessageCircle,
   Star,
@@ -21,14 +20,33 @@ import {
   Ticket,
   type LucideIcon,
 } from 'lucide-react';
+import { useFocusTrap } from '../lib/useFocusTrap';
+
+// Custom X (formerly Twitter) icon component
+const XIcon = (({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+)) as unknown as LucideIcon;
 import type { FeedbackItem, KanbanChannel } from '../lib/kanbanTypes';
 import { PRIORITY_DOT_COLORS } from '../lib/kanbanTypes';
 import { getTimeAgo } from '../lib/kanbanMockData';
+import { SLABadge } from './sla';
+import {
+  SentimentBadge,
+  PriorityBadge,
+  ConfidenceBadge,
+} from './lib/sentimentUtils';
 
 // Channel icon component map
 const ChannelIcon: Record<KanbanChannel, LucideIcon> = {
   email: Mail,
-  twitter: Twitter,
+  x: XIcon,
   facebook: Facebook,
   support_chat: MessageCircle,
   trustpilot: Star,
@@ -51,22 +69,25 @@ export default function CardDetailModal({
 }: CardDetailModalProps) {
   const [mounted, setMounted] = useState(false);
 
+  const focusTrapRef = useFocusTrap<HTMLDivElement>({
+    isActive: isOpen && mounted && item !== null,
+    onEscape: onClose,
+    autoFocusSelector: '[data-testid="card-detail-close-btn"]',
+  });
+
   useEffect(() => {
     setMounted(true);
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+  }, []);
 
+  useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!mounted || !item) return null;
 
@@ -122,12 +143,12 @@ export default function CardDetailModal({
           </div>
         );
 
-      case 'twitter':
+      case 'x':
         return (
           <div className="bg-white dark:bg-black rounded-xl border border-gray-200 dark:border-gray-800 p-4 max-w-xl mx-auto shadow-sm">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-lg">
                   {item.author.name.charAt(0)}
                 </div>
               </div>
@@ -149,8 +170,8 @@ export default function CardDetailModal({
                   {item.content.body}
                 </div>
                 <div className="mt-3 flex items-center justify-between text-gray-500 dark:text-gray-400 max-w-md">
-                  <div className="flex items-center gap-2 group cursor-pointer hover:text-sky-500">
-                    <MessageCircle className="w-4 h-4 group-hover:bg-sky-500/10 rounded-full p-0.5 box-content transition-colors" />
+                  <div className="flex items-center gap-2 group cursor-pointer hover:text-gray-300">
+                    <MessageCircle className="w-4 h-4 group-hover:bg-gray-500/10 rounded-full p-0.5 box-content transition-colors" />
                     <span className="text-xs">{item.engagement?.replies || 0}</span>
                   </div>
                   <div className="flex items-center gap-2 group cursor-pointer hover:text-green-500">
@@ -235,7 +256,7 @@ export default function CardDetailModal({
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-0 z-[10000] flex items-center justify-center p-4 pointer-events-none"
           >
-            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto">
+            <div ref={focusTrapRef} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto" role="dialog" aria-modal="true" aria-labelledby="card-detail-modal-title">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
                 <div className="flex items-center gap-3">
@@ -246,15 +267,9 @@ export default function CardDetailModal({
                     })()}
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-[var(--color-text-primary)] capitalize flex items-center gap-2">
+                    <h2 id="card-detail-modal-title" className="text-base font-semibold text-[var(--color-text-primary)] capitalize flex items-center gap-2">
                       {item.channel.replace('_', ' ')} Feedback
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                        item.priority === 'critical' ? 'border-red-500/30 text-red-500 bg-red-500/10' :
-                        item.priority === 'high' ? 'border-orange-500/30 text-orange-500 bg-orange-500/10' :
-                        'border-gray-500/30 text-gray-500 bg-gray-500/10'
-                      }`}>
-                        {item.priority.toUpperCase()}
-                      </span>
+                      <PriorityBadge priority={item.priority} />
                     </h2>
                   </div>
                 </div>
@@ -262,6 +277,7 @@ export default function CardDetailModal({
                   onClick={onClose}
                   className="p-2 hover:bg-[var(--color-surface-elevated)] rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
                   aria-label="Close modal"
+                  data-testid="card-detail-close-btn"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -272,6 +288,18 @@ export default function CardDetailModal({
                 {/* Channel Specific View */}
                 {renderChannelSpecificContent()}
 
+                {/* Criticality Indicators */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <SLABadge item={item} />
+                  <PriorityBadge priority={item.priority} size="md" />
+                  {item.analysis && (
+                    <>
+                      <SentimentBadge sentiment={item.analysis.sentiment} size="md" />
+                      <ConfidenceBadge confidence={item.analysis.confidence} size="md" />
+                    </>
+                  )}
+                </div>
+
                 {/* Metadata Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
@@ -279,15 +307,15 @@ export default function CardDetailModal({
                     <div className="font-medium capitalize text-[var(--color-text-primary)]">{item.status}</div>
                   </div>
                   <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
-                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Sentiment</div>
-                    <div className="font-medium capitalize text-[var(--color-text-primary)]">
-                      {item.analysis?.sentiment || 'Not analyzed'}
+                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Classification</div>
+                    <div className="font-medium text-[var(--color-text-primary)]">
+                      {item.analysis?.bugTag || '-'}
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
-                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Confidence</div>
-                    <div className="font-medium text-[var(--color-text-primary)]">
-                      {item.analysis ? `${Math.round(item.analysis.confidence * 100)}%` : '-'}
+                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Pipeline</div>
+                    <div className="font-medium capitalize text-[var(--color-text-primary)]">
+                      {item.analysis?.suggestedPipeline || '-'}
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
@@ -338,6 +366,7 @@ export default function CardDetailModal({
                 <button
                   onClick={() => onAction('link-jira')}
                   className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] rounded-[var(--radius-md)] transition-colors flex items-center gap-2"
+                  data-testid="card-detail-link-jira-btn"
                 >
                   <Ticket className="w-4 h-4" /> Link Jira Ticket
                 </button>
@@ -357,6 +386,7 @@ export default function CardDetailModal({
                               : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] border border-[var(--color-border-subtle)]'
                           }
                         `}
+                        data-testid={`card-detail-action-${btn.id}-btn`}
                       >
                         <BtnIcon className="w-4 h-4" /> {btn.label}
                       </button>

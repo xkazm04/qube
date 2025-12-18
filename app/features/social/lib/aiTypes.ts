@@ -28,6 +28,7 @@ export type CustomerResponseData = z.infer<typeof CustomerResponseSchema>;
 // Single feedback analysis result
 export const FeedbackAnalysisResultSchema = z.object({
   feedbackId: z.string().describe('ID of the feedback item'),
+  title: z.string().describe('Short 3-6 word title summarizing the issue'),
   classification: z.enum(['bug', 'feature', 'clarification']).describe('Type of feedback'),
   confidence: z.number().min(0).max(1).describe('Confidence score'),
   customerResponse: CustomerResponseSchema,

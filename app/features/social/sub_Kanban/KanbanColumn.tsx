@@ -8,6 +8,7 @@ import {
   User,
   Bot,
   CheckCircle,
+  AlertCircle,
   type LucideIcon,
 } from 'lucide-react';
 import type { FeedbackItem, KanbanColumnConfig } from '../lib/kanbanTypes';
@@ -28,6 +29,8 @@ interface KanbanColumnProps {
   items: FeedbackItem[];
   isDragOver: boolean;
   isValidDrop: boolean;
+  dropReason?: string;
+  isDragging?: boolean;
   selectedIds: Set<string>;
   processingStatus?: AIProcessingStatus;
   aiResults?: Map<string, FeedbackAnalysisResult>;
@@ -37,6 +40,7 @@ interface KanbanColumnProps {
   onCardDragStart: (e: React.DragEvent, item: FeedbackItem) => void;
   onCardDragEnd: (e: React.DragEvent) => void;
   onCardClick: (item: FeedbackItem) => void;
+  onCardDoubleClick?: (item: FeedbackItem) => void;
   onCardRightClick: (item: FeedbackItem, e: React.MouseEvent) => void;
   onCardAction: (action: string, item: FeedbackItem) => void;
   draggingItem: FeedbackItem | null;
@@ -48,6 +52,8 @@ export default function KanbanColumn({
   items,
   isDragOver,
   isValidDrop,
+  dropReason,
+  isDragging = false,
   selectedIds,
   processingStatus,
   aiResults,
@@ -57,6 +63,7 @@ export default function KanbanColumn({
   onCardDragStart,
   onCardDragEnd,
   onCardClick,
+  onCardDoubleClick,
   onCardRightClick,
   onCardAction,
   draggingItem,
@@ -76,11 +83,21 @@ export default function KanbanColumn({
   };
 
   const getDropIndicatorClass = () => {
-    if (!isDragOver) return '';
-    if (isValidDrop) {
-      return 'bg-green-500/10 border-green-500/50';
+    // When dragging but not over this column, show subtle indicator of valid/invalid state
+    if (isDragging && !isDragOver) {
+      if (isValidDrop) {
+        return 'border-green-500/30 bg-green-500/5';
+      }
+      return 'border-red-500/20 bg-red-500/5 opacity-75';
     }
-    return 'bg-red-500/10 border-red-500/50';
+    // When hovering over the column
+    if (isDragOver) {
+      if (isValidDrop) {
+        return 'bg-green-500/15 border-green-500/60 shadow-[0_0_15px_rgba(34,197,94,0.2)]';
+      }
+      return 'bg-red-500/15 border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.2)]';
+    }
+    return '';
   };
 
   // Count selected items in this column
@@ -89,16 +106,17 @@ export default function KanbanColumn({
   return (
     <div
       className={`
-        flex-1 min-w-[300px] max-w-[380px] flex flex-col
+        relative flex-1 min-w-[300px] max-w-[380px] flex flex-col
         bg-[var(--color-background)] rounded-[var(--radius-lg)]
         border border-[var(--color-border-subtle)]
         ${getDropIndicatorClass()}
-        transition-colors duration-150
+        transition-all duration-150
       `}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       data-column-id={column.id}
+      data-testid={`kanban-column-${column.id}`}
     >
       {/* Column Header */}
       <div
@@ -155,6 +173,7 @@ export default function KanbanColumn({
               onDragStart={onCardDragStart}
               onDragEnd={onCardDragEnd}
               onClick={onCardClick}
+              onDoubleClick={onCardDoubleClick}
               onRightClick={onCardRightClick}
               onAction={onCardAction}
             />
@@ -167,11 +186,33 @@ export default function KanbanColumn({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 100 }}
             exit={{ opacity: 0, height: 0 }}
-            className="border-2 border-dashed border-[var(--color-accent)] rounded-[var(--radius-md)] bg-[var(--color-accent-subtle)] flex items-center justify-center"
+            className="border-2 border-dashed border-green-500 rounded-[var(--radius-md)] bg-green-500/10 flex items-center justify-center"
+            data-testid={`kanban-column-valid-drop-${column.id}`}
           >
-            <span className="text-xs text-[var(--color-accent)]">Drop here</span>
+            <span className="text-xs text-green-400 font-medium">Drop here</span>
           </motion.div>
         )}
+
+        {/* Invalid drop feedback tooltip */}
+        <AnimatePresence>
+          {isDragOver && !isValidDrop && dropReason && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none"
+              data-testid={`kanban-column-invalid-drop-${column.id}`}
+            >
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-900/95 border border-red-500/50 shadow-lg backdrop-blur-sm">
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                <span className="text-sm text-red-100 font-medium whitespace-nowrap">
+                  {dropReason}
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Empty state */}
         {items.length === 0 && !isDragOver && (

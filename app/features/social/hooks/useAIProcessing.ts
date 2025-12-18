@@ -92,10 +92,17 @@ export function useAIProcessing(options: UseAIProcessingOptions = {}) {
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to process feedback');
+          const errorMessage = errorData.error || 'Failed to process feedback';
+          const rawResponse = errorData.rawResponse ? `\n\nRaw response: ${errorData.rawResponse.substring(0, 200)}...` : '';
+          throw new Error(`${errorMessage}${rawResponse}`);
         }
 
         const data: BatchAnalysisResponse = await response.json();
+
+        // Validate response structure
+        if (!data.results || !Array.isArray(data.results)) {
+          throw new Error('Invalid response format: missing results array');
+        }
 
         // Update results map
         const newResults = new Map(state.results);

@@ -102,7 +102,7 @@ export default function CompactProcessedList({
           <div className="flex items-center gap-2">
             <ListChecks className="w-5 h-5 text-purple-400" />
             <h2 className="text-lg font-semibold text-gray-200">Action Items</h2>
-            <span className="text-sm text-gray-500">({feedback.length})</span>
+            <span className="text-sm text-gray-400">({feedback.length})</span>
           </div>
 
           {/* Resolve All button */}
@@ -172,11 +172,11 @@ export default function CompactProcessedList({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center justify-center py-12 text-gray-500"
+              className="flex flex-col items-center justify-center py-12 text-gray-400"
             >
               <ListChecks className="w-12 h-12 mb-3 opacity-30" />
               <p className="text-sm">No action items yet</p>
-              <p className="text-xs text-gray-600 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 Use AI Process to evaluate feedback
               </p>
             </motion.div>

@@ -13,6 +13,8 @@ interface AITypographyButtonProps {
   ) => Promise<void>;
   setEvaluatedFeedback: React.Dispatch<React.SetStateAction<EvaluatedFeedback[]>>;
   setRawFeedback: React.Dispatch<React.SetStateAction<RawFeedback[]>>;
+  isProcessing?: boolean;
+  onProcessingChange?: (isProcessing: boolean) => void;
 }
 
 export default function AITypographyButton({
@@ -20,8 +22,17 @@ export default function AITypographyButton({
   onProcess,
   setEvaluatedFeedback,
   setRawFeedback,
+  isProcessing: externalIsProcessing,
+  onProcessingChange,
 }: AITypographyButtonProps) {
-  const [isProcessing, setIsProcessing] = React.useState(false);
+  const [internalIsProcessing, setInternalIsProcessing] = React.useState(false);
+
+  // Use external state if provided, otherwise use internal state
+  const isProcessing = externalIsProcessing ?? internalIsProcessing;
+  const setIsProcessing = (value: boolean) => {
+    setInternalIsProcessing(value);
+    onProcessingChange?.(value);
+  };
 
   const handleClick = async () => {
     if (rawFeedback.length === 0 || isProcessing) return;

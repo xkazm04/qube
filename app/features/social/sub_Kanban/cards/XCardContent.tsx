@@ -3,7 +3,7 @@
 import React from 'react';
 import type { FeedbackItem } from '../../lib/kanbanTypes';
 
-interface TwitterCardContentProps {
+interface XCardContentProps {
   item: FeedbackItem;
 }
 
@@ -13,7 +13,7 @@ function formatFollowers(count: number): string {
   return count.toString();
 }
 
-export default function TwitterCardContent({ item }: TwitterCardContentProps) {
+export default function XCardContent({ item }: XCardContentProps) {
   const isViralRisk = (item.engagement?.likes || 0) > 100 || (item.engagement?.retweets || 0) > 50;
 
   return (
@@ -30,7 +30,7 @@ export default function TwitterCardContent({ item }: TwitterCardContentProps) {
         )}
       </div>
 
-      {/* Tweet content */}
+      {/* Post content */}
       <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
         &quot;{item.content.body}&quot;
       </div>
@@ -44,7 +44,7 @@ export default function TwitterCardContent({ item }: TwitterCardContentProps) {
             </span>
           )}
           {item.engagement.retweets !== undefined && (
-            <span className="flex items-center gap-1" title="Retweets">
+            <span className="flex items-center gap-1" title="Reposts">
               🔁 {item.engagement.retweets}
             </span>
           )}

@@ -15,13 +15,13 @@ function getAdapter(provider: AIProvider) {
     case 'claude':
       const anthropicKey = process.env.ANTHROPIC_API_KEY;
       if (!anthropicKey) {
-        throw new Error('ANTHROPIC_API_KEY is not set');
+        throw new Error('ANTHROPIC_API_KEY is not set. Please add it to your .env.local file.');
       }
       return createAnthropic(anthropicKey);
     case 'gemini':
       const geminiKey = process.env.GEMINI_API_KEY;
       if (!geminiKey) {
-        throw new Error('GEMINI_API_KEY is not set');
+        throw new Error('GEMINI_API_KEY is not set. Please add it to your .env.local file.');
       }
       return createGemini(geminiKey);
     default:
@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
       stream?: boolean;
     };
 
+    console.log(`[AI Analyze] Provider: ${provider}, Items: ${feedbackItems?.length || 0}`);
+
     // Validate input
     if (!provider || !['claude', 'gemini'].includes(provider)) {
       return NextResponse.json(
@@ -63,14 +65,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Get adapter and model
-    const adapter = getAdapter(provider);
+    let adapter;
+    try {
+      adapter = getAdapter(provider);
+    } catch (adapterError) {
+      console.error('[AI Analyze] Adapter error:', adapterError);
+      return NextResponse.json(
+        { error: adapterError instanceof Error ? adapterError.message : 'Failed to create adapter' },
+        { status: 500 }
+      );
+    }
+
     const model = AI_MODELS[provider];
+    console.log(`[AI Analyze] Using model: ${model}`);
 
     // Generate the analysis prompt
     const userPrompt = generateAnalysisPrompt(feedbackItems);
 
     // Create chat messages - combine system prompt with user prompt
-    // since @tanstack/ai doesn't support 'system' role directly
     const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [
       { role: 'user', content: `${FEEDBACK_ANALYSIS_SYSTEM_PROMPT}\n\n${userPrompt}` },
     ];
@@ -85,6 +97,8 @@ export async function POST(request: NextRequest) {
       });
       return toStreamResponse(stream);
     } else {
+      console.log('[AI Analyze] Starting chat...');
+
       // Return complete response
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stream = chat({
@@ -95,44 +109,106 @@ export async function POST(request: NextRequest) {
 
       // Collect the full response
       let fullResponse = '';
-      for await (const chunk of stream) {
-        if (chunk.type === 'content') {
-          fullResponse += chunk.content;
+      let chunkCount = 0;
+
+      try {
+        for await (const chunk of stream) {
+          chunkCount++;
+          // Debug: log chunk structure for first few chunks
+          if (chunkCount <= 3) {
+            console.log(`[AI Analyze] Chunk ${chunkCount}:`, JSON.stringify(chunk).substring(0, 200));
+          }
+
+          // Handle TanStack AI chunk types
+          // Available types: "error" | "content" | "tool_call" | "tool_result" | "done" | "approval-requested" | "tool-input-available" | "thinking"
+          if (chunk.type === 'content') {
+            // Content chunk contains the actual text response
+            if ('content' in chunk && typeof chunk.content === 'string') {
+              fullResponse += chunk.content;
+            }
+          } else if (chunk.type === 'error') {
+            console.error('[AI Analyze] Error chunk:', chunk);
+          }
+          // 'done' and other types don't contain text content
         }
+      } catch (streamError) {
+        console.error('[AI Analyze] Stream error:', streamError);
+        return NextResponse.json(
+          {
+            error: 'Error reading AI response stream',
+            details: streamError instanceof Error ? streamError.message : 'Unknown stream error'
+          },
+          { status: 500 }
+        );
+      }
+
+      console.log(`[AI Analyze] Received ${chunkCount} chunks, response length: ${fullResponse.length}`);
+
+      if (!fullResponse || fullResponse.trim().length === 0) {
+        console.error('[AI Analyze] Empty response received');
+        return NextResponse.json(
+          { error: 'Empty response from AI provider. Please check your API key and try again.' },
+          { status: 500 }
+        );
       }
 
       // Parse the JSON response
       try {
-        // Extract JSON from the response (handle markdown code blocks)
+        console.log('[AI Analyze] Raw response preview:', fullResponse.substring(0, 300));
+
         let jsonStr = fullResponse.trim();
-        const jsonMatch = fullResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
-        
-        if (jsonMatch) {
-          jsonStr = jsonMatch[1].trim();
+
+        // Strategy 1: Extract first complete JSON from markdown code block
+        const codeBlockMatch = jsonStr.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (codeBlockMatch) {
+          jsonStr = codeBlockMatch[1].trim();
+          console.log('[AI Analyze] Extracted from code block');
         } else {
-          // Fallback: Try to find the JSON object if it's not wrapped in code blocks
-          const firstOpenBrace = jsonStr.indexOf('{');
-          const lastCloseBrace = jsonStr.lastIndexOf('}');
-          if (firstOpenBrace !== -1 && lastCloseBrace !== -1 && lastCloseBrace > firstOpenBrace) {
-            jsonStr = jsonStr.substring(firstOpenBrace, lastCloseBrace + 1);
+          // Strategy 2: Find the first complete JSON object with balanced braces
+          const firstBrace = jsonStr.indexOf('{');
+          if (firstBrace !== -1) {
+            let braceCount = 0;
+            let endIndex = -1;
+
+            for (let i = firstBrace; i < jsonStr.length; i++) {
+              if (jsonStr[i] === '{') braceCount++;
+              if (jsonStr[i] === '}') braceCount--;
+              if (braceCount === 0) {
+                endIndex = i;
+                break;
+              }
+            }
+
+            if (endIndex !== -1) {
+              jsonStr = jsonStr.substring(firstBrace, endIndex + 1);
+              console.log('[AI Analyze] Extracted JSON with balanced braces');
+            }
           }
         }
 
+        // Clean up any remaining issues
+        jsonStr = jsonStr
+          .replace(/```json/g, '')
+          .replace(/```/g, '')
+          .trim();
+
         const result = JSON.parse(jsonStr);
+        console.log('[AI Analyze] Successfully parsed response with', result.results?.length || 0, 'results');
         return NextResponse.json(result);
       } catch (parseError) {
-        console.error('Failed to parse AI response:', fullResponse);
+        console.error('[AI Analyze] Parse error:', parseError);
+        console.error('[AI Analyze] Failed response:', fullResponse.substring(0, 1000));
         return NextResponse.json(
           {
-            error: 'Failed to parse AI response',
-            rawResponse: fullResponse
+            error: 'Failed to parse AI response as JSON',
+            rawResponse: fullResponse.substring(0, 1000)
           },
           { status: 500 }
         );
       }
     }
   } catch (error) {
-    console.error('AI analysis error:', error);
+    console.error('[AI Analyze] Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { error: errorMessage },

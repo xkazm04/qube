@@ -18,15 +18,31 @@
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+  --color-info: #3b82f6;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+
+  /* Border radius scale (matches design-tokens.ts) */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /* Icon sizes (for reference, use Tailwind classes in components) */
+  /* xs: 12px (w-3), sm: 14px (w-3.5), md: 16px (w-4), lg: 20px (w-5), xl: 24px (w-6), 2xl: 32px (w-8) */
+
+  /* Opacity scale for backgrounds (append to color: bg-purple-500/10) */
+  /* subtle: /10, default: /20, moderate: /30, interactive: /40, strong: /50 */
+
+  /* Spacing scale (for reference, use Tailwind classes) */
+  /* xs: 4px (1), sm: 8px (2), md: 12px (3), lg: 16px (4), xl: 20px (5), 2xl: 24px (6) */
+
   --font-family: inherit;
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
 }
 
 @theme inline {

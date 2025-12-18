@@ -1,4 +1,4 @@
-export type FeedbackChannel = 'all' | 'facebook' | 'twitter' | 'email';
+export type FeedbackChannel = 'all' | 'facebook' | 'x' | 'email';
 
 export type EvaluationCategory = 'bug' | 'proposal' | 'feedback';
 

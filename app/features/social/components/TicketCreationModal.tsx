@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Ticket, CheckCircle, Loader2, ExternalLink, Sparkles, AlertCircle } from 'lucide-react';
+import { useToast } from '@/app/components/ui/ToastProvider';
+import { useFocusTrap } from '../lib/useFocusTrap';
 
 interface TicketCreationModalProps {
   isOpen: boolean;
@@ -25,6 +27,12 @@ export default function TicketCreationModal({
 }: TicketCreationModalProps) {
   const [phase, setPhase] = useState<CreationPhase>('preview');
   const [generatedKey, setGeneratedKey] = useState('');
+  const toast = useToast();
+  const focusTrapRef = useFocusTrap<HTMLDivElement>({
+    isActive: isOpen,
+    onEscape: phase === 'preview' ? onClose : undefined,
+    autoFocusSelector: '[data-testid="ticket-creation-create-btn"]',
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -44,10 +52,11 @@ export default function TicketCreationModal({
     setGeneratedKey(key);
     setPhase('success');
 
-    // Auto-close after success
+    // Auto-close after success and show toast
     setTimeout(() => {
       onConfirm();
       onClose();
+      toast.success('Ticket created', `Jira ticket ${key} has been created successfully`);
     }, 2000);
   };
 
@@ -74,19 +83,21 @@ export default function TicketCreationModal({
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
-            <div className="bg-gray-900 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div ref={focusTrapRef} className="bg-gray-900 border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="ticket-creation-modal-title">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-purple-500/20">
                     <Ticket className="w-5 h-5 text-purple-400" />
                   </div>
-                  <h2 className="text-lg font-semibold text-white">Create Jira Ticket</h2>
+                  <h2 id="ticket-creation-modal-title" className="text-lg font-semibold text-white">Create Jira Ticket</h2>
                 </div>
                 {phase === 'preview' && (
                   <button
                     onClick={onClose}
                     className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                    data-testid="ticket-creation-close-btn"
+                    aria-label="Close modal"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -106,7 +117,7 @@ export default function TicketCreationModal({
                     >
                       {/* Title */}
                       <div>
-                        <label className="text-xs text-gray-500 uppercase tracking-wider">Title</label>
+                        <label className="text-xs text-gray-400 uppercase tracking-wider">Title</label>
                         <div className="mt-1 p-3 rounded-lg bg-gray-800/50 border border-gray-700/30">
                           <p className="text-sm text-gray-200">{ticketData.title}</p>
                         </div>
@@ -114,7 +125,7 @@ export default function TicketCreationModal({
 
                       {/* Description */}
                       <div>
-                        <label className="text-xs text-gray-500 uppercase tracking-wider">Description</label>
+                        <label className="text-xs text-gray-400 uppercase tracking-wider">Description</label>
                         <div className="mt-1 p-3 rounded-lg bg-gray-800/50 border border-gray-700/30 max-h-48 overflow-y-auto custom-scrollbar">
                           <p className="text-sm text-gray-300 whitespace-pre-wrap">{ticketData.description}</p>
                         </div>
@@ -122,8 +133,8 @@ export default function TicketCreationModal({
 
                       {/* Priority */}
                       <div className="flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-gray-500" />
-                        <span className="text-xs text-gray-500">Priority:</span>
+                        <AlertCircle className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs text-gray-400">Priority:</span>
                         <span className={`text-xs px-2 py-1 rounded-full font-medium uppercase ${
                           ticketData.priority === 'critical' ? 'bg-red-500/20 text-red-300' :
                           ticketData.priority === 'high' ? 'bg-orange-500/20 text-orange-300' :
@@ -247,7 +258,7 @@ export default function TicketCreationModal({
                       >
                         <Ticket className="w-4 h-4 text-purple-400" />
                         <span className="text-purple-300 font-mono font-medium">{generatedKey}</span>
-                        <ExternalLink className="w-4 h-4 text-gray-500" />
+                        <ExternalLink className="w-4 h-4 text-gray-400" />
                       </motion.div>
 
                       {/* Sparkle effects */}
@@ -283,6 +294,7 @@ export default function TicketCreationModal({
                   <button
                     onClick={onClose}
                     className="px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-colors"
+                    data-testid="ticket-creation-cancel-btn"
                   >
                     Cancel
                   </button>
@@ -291,6 +303,7 @@ export default function TicketCreationModal({
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-500 transition-colors"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
+                    data-testid="ticket-creation-create-btn"
                   >
                     <Ticket className="w-4 h-4" />
                     Create Ticket

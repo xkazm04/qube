@@ -18,8 +18,8 @@ export function createAIAdapter(provider: AIProvider) {
 
 // Model configurations
 export const AI_MODELS = {
-  claude: 'claude-3-haiku-20240307',
-  gemini: 'gemini-1.5-flash',
+  claude: 'claude-haiku-4-5-20251001',
+  gemini: 'gemini-2.5-flash',
 } as const;
 
 // System prompt for feedback analysis
@@ -90,11 +90,12 @@ For each feedback item, provide:
 6. Relevant tags
 7. Brief reasoning for your classification
 
-Respond with a JSON object in this exact format:
+Respond with a JSON object in this exact format (no markdown, just pure JSON):
 {
   "results": [
     {
       "feedbackId": "string",
+      "title": "string (short 3-6 word title summarizing the issue, e.g. 'Search button visibility issue')",
       "classification": "bug" | "feature" | "clarification",
       "confidence": number,
       "customerResponse": {

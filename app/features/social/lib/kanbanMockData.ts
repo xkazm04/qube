@@ -21,11 +21,11 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['currency', 'localization'],
   },
-  // NEW - Twitter
+  // NEW - X
   {
     id: 'fb-002',
     company: 'kiwi',
-    channel: 'twitter',
+    channel: 'x',
     timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
     status: 'new',
     priority: 'critical',
@@ -196,11 +196,11 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     },
     tags: ['payment', 'checkout', 'critical'],
   },
-  // MANUAL - Twitter
+  // MANUAL - X
   {
     id: 'fb-009',
     company: 'kiwi',
-    channel: 'twitter',
+    channel: 'x',
     timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
     status: 'manual',
     priority: 'high',
@@ -345,11 +345,11 @@ export const mockKanbanFeedback: FeedbackItem[] = [
     linkedTickets: ['JIRA-1230'],
     tags: ['email', 'confirmation', 'booking'],
   },
-  // DONE - Twitter
+  // DONE - X
   {
     id: 'fb-014',
     company: 'slevomat',
-    channel: 'twitter',
+    channel: 'x',
     timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
     status: 'done',
     priority: 'medium',
