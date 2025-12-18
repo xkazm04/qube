@@ -2,22 +2,45 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { FeedbackItem, KanbanColumn as KanbanColumnType } from '../lib/kanbanTypes';
+import {
+  Inbox,
+  Search,
+  User,
+  Bot,
+  CheckCircle,
+  type LucideIcon,
+} from 'lucide-react';
+import type { FeedbackItem, KanbanColumnConfig } from '../lib/kanbanTypes';
+import type { FeedbackAnalysisResult, AIProcessingStatus } from '../lib/aiTypes';
 import KanbanCard from './KanbanCard';
 
+// Icon mapping for column iconName
+const ColumnIcons: Record<string, LucideIcon> = {
+  inbox: Inbox,
+  search: Search,
+  user: User,
+  bot: Bot,
+  'check-circle': CheckCircle,
+};
+
 interface KanbanColumnProps {
-  column: KanbanColumnType;
+  column: KanbanColumnConfig;
   items: FeedbackItem[];
   isDragOver: boolean;
   isValidDrop: boolean;
+  selectedIds: Set<string>;
+  processingStatus?: AIProcessingStatus;
+  aiResults?: Map<string, FeedbackAnalysisResult>;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onCardDragStart: (e: React.DragEvent, item: FeedbackItem) => void;
   onCardDragEnd: (e: React.DragEvent) => void;
   onCardClick: (item: FeedbackItem) => void;
+  onCardRightClick: (item: FeedbackItem, e: React.MouseEvent) => void;
   onCardAction: (action: string, item: FeedbackItem) => void;
   draggingItem: FeedbackItem | null;
+  headerActions?: React.ReactNode;
 }
 
 export default function KanbanColumn({
@@ -25,14 +48,19 @@ export default function KanbanColumn({
   items,
   isDragOver,
   isValidDrop,
+  selectedIds,
+  processingStatus,
+  aiResults,
   onDragOver,
   onDragLeave,
   onDrop,
   onCardDragStart,
   onCardDragEnd,
   onCardClick,
+  onCardRightClick,
   onCardAction,
   draggingItem,
+  headerActions,
 }: KanbanColumnProps) {
   const getBorderColor = () => {
     switch (column.id) {
@@ -54,6 +82,9 @@ export default function KanbanColumn({
     }
     return 'bg-red-500/10 border-red-500/50';
   };
+
+  // Count selected items in this column
+  const selectedInColumn = items.filter((item) => selectedIds.has(item.id)).length;
 
   return (
     <div
@@ -78,10 +109,20 @@ export default function KanbanColumn({
         `}
       >
         <div className="flex items-center gap-2">
-          <span className="text-base">{column.icon}</span>
+          {(() => {
+            const IconComponent = ColumnIcons[column.iconName];
+            return IconComponent ? (
+              <IconComponent className="w-4 h-4 text-[var(--color-text-secondary)]" />
+            ) : null;
+          })()}
           <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
             {column.title}
           </h3>
+          {selectedInColumn > 0 && (
+            <span className="px-1.5 py-0.5 text-[10px] font-medium text-white bg-blue-500 rounded-full">
+              {selectedInColumn} selected
+            </span>
+          )}
           <span className="ml-auto px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)] bg-[var(--color-surface-elevated)] rounded-full">
             {items.length}
             {column.maxItems && `/${column.maxItems}`}
@@ -90,6 +131,11 @@ export default function KanbanColumn({
         <span className="text-[11px] text-[var(--color-text-muted)] mt-1 block">
           {column.subtitle}
         </span>
+        {headerActions && (
+          <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+            {headerActions}
+          </div>
+        )}
       </div>
 
       {/* Column Body */}
@@ -103,9 +149,13 @@ export default function KanbanColumn({
               key={item.id}
               item={item}
               isDragging={draggingItem?.id === item.id}
+              isSelected={selectedIds.has(item.id)}
+              processingStatus={selectedIds.has(item.id) ? processingStatus : undefined}
+              aiResult={aiResults?.get(item.id)}
               onDragStart={onCardDragStart}
               onDragEnd={onCardDragEnd}
               onClick={onCardClick}
+              onRightClick={onCardRightClick}
               onAction={onCardAction}
             />
           ))}
@@ -127,7 +177,12 @@ export default function KanbanColumn({
         {items.length === 0 && !isDragOver && (
           <div className="flex-1 flex items-center justify-center text-center py-8">
             <div className="text-[var(--color-text-muted)]">
-              <div className="text-2xl mb-2 opacity-50">{column.icon}</div>
+              {(() => {
+                const IconComponent = ColumnIcons[column.iconName];
+                return IconComponent ? (
+                  <IconComponent className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                ) : null;
+              })()}
               <p className="text-xs">No items</p>
             </div>
           </div>

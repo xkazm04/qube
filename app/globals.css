@@ -127,3 +127,28 @@ body {
 .star-filled {
   color: #fbbf24;
 }
+
+/* Force light theme for specific pages */
+.light {
+  color-scheme: light;
+}
+
+.light body,
+body.light {
+  --background: #ffffff;
+  --foreground: #000000;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.light input,
+.light select,
+.light textarea {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #d1d5db !important;
+}
+
+.light input::placeholder {
+  color: #9ca3af !important;
+}

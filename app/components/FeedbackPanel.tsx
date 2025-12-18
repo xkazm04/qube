@@ -145,20 +145,16 @@ export default function FeedbackPanel({ feedbackItems, accentColor, agentColor }
                 </p>
               )}
 
-              {/* Chat Conversation */}
+              {/* Chat Conversation - Only show customer messages */}
               {item.conversation && (
                 <div className="space-y-2 text-sm">
-                  {item.conversation.map((msg, idx) => (
-                    <div key={idx} className="py-1">
-                      <span
-                        className="font-semibold"
-                        style={{ color: msg.role === "agent" ? agentColor : "#333" }}
-                      >
-                        {msg.role === "agent" ? "Agent" : "Customer"}:
-                      </span>{" "}
-                      <span className="text-gray-600">{msg.message}</span>
-                    </div>
-                  ))}
+                  {item.conversation
+                    .filter((msg) => msg.role === "customer")
+                    .map((msg, idx) => (
+                      <div key={idx} className="py-1">
+                        <span className="text-gray-600">{msg.message}</span>
+                      </div>
+                    ))}
                 </div>
               )}
 

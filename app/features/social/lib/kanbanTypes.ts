@@ -1,4 +1,5 @@
 // Kanban Board Types
+import type { LucideIcon } from 'lucide-react';
 
 export type KanbanChannel =
   | 'email'
@@ -82,21 +83,21 @@ export interface FeedbackItem {
   platform?: 'ios' | 'android';
 }
 
-export interface KanbanColumn {
+export interface KanbanColumnConfig {
   id: KanbanStatus;
   title: string;
   subtitle: string;
-  icon: string;
+  iconName: 'inbox' | 'search' | 'user' | 'bot' | 'check-circle';
   acceptsFrom: KanbanStatus[];
   maxItems: number | null;
 }
 
-export const KANBAN_COLUMNS: KanbanColumn[] = [
+export const KANBAN_COLUMNS: KanbanColumnConfig[] = [
   {
     id: 'new',
     title: 'New',
     subtitle: 'Incoming feedback',
-    icon: '📥',
+    iconName: 'inbox',
     acceptsFrom: [],
     maxItems: null,
   },
@@ -104,7 +105,7 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
     id: 'analyzed',
     title: 'Analyzed',
     subtitle: 'Triaged & categorized',
-    icon: '🔍',
+    iconName: 'search',
     acceptsFrom: ['new'],
     maxItems: null,
   },
@@ -112,7 +113,7 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
     id: 'manual',
     title: 'Manual',
     subtitle: 'Human dev pipeline',
-    icon: '👨‍💻',
+    iconName: 'user',
     acceptsFrom: ['analyzed'],
     maxItems: 10,
   },
@@ -120,7 +121,7 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
     id: 'automatic',
     title: 'Automatic',
     subtitle: 'AI agent pipeline',
-    icon: '🤖',
+    iconName: 'bot',
     acceptsFrom: ['analyzed'],
     maxItems: 5,
   },
@@ -128,20 +129,20 @@ export const KANBAN_COLUMNS: KanbanColumn[] = [
     id: 'done',
     title: 'Done',
     subtitle: 'Resolved',
-    icon: '✅',
+    iconName: 'check-circle',
     acceptsFrom: ['manual', 'automatic'],
     maxItems: null,
   },
 ];
 
-export const CHANNEL_ICONS: Record<KanbanChannel, string> = {
-  email: '📧',
-  twitter: '🐦',
-  facebook: '📘',
-  support_chat: '💬',
-  trustpilot: '⭐',
-  app_store: '📱',
-  instagram: '📸',
+export const CHANNEL_ICON_NAMES: Record<KanbanChannel, string> = {
+  email: 'mail',
+  twitter: 'twitter',
+  facebook: 'facebook',
+  support_chat: 'message-circle',
+  trustpilot: 'star',
+  app_store: 'smartphone',
+  instagram: 'instagram',
 };
 
 export const PRIORITY_COLORS: Record<KanbanPriority, string> = {
@@ -151,9 +152,10 @@ export const PRIORITY_COLORS: Record<KanbanPriority, string> = {
   critical: 'text-red-400',
 };
 
-export const PRIORITY_INDICATORS: Record<KanbanPriority, string> = {
-  low: '🟢',
-  medium: '🔵',
-  high: '🟡',
-  critical: '🔴',
+// Priority indicator colors for the dot
+export const PRIORITY_DOT_COLORS: Record<KanbanPriority, string> = {
+  low: 'bg-green-500',
+  medium: 'bg-blue-500',
+  high: 'bg-yellow-500',
+  critical: 'bg-red-500',
 };

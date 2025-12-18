@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Power } from 'lucide-react';
-import type { Project, ProcessInfo } from '@/types';
+import type { Project, ProcessInfo } from '../lib/types';
 
 interface ProjectServerButtonProps {
   project: Project;

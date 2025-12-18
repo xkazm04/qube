@@ -14,12 +14,13 @@ import TicketCreationModal from './components/TicketCreationModal';
 import ReplyModal from './components/ReplyModal';
 import JiraTicketModal from './components/JiraTicketModal';
 import ClaudeRequirementModal from './components/ClaudeRequirementModal';
-import { KanbanBoard } from './sub_Kanban';
+import KanbanBoard from './sub_Kanban/KanbanBoard';
 import {
   mockRawFeedback,
   mockEvaluatedFeedback,
   mockSuggestedReplies,
 } from './lib/mockData';
+import { mockKanbanFeedback } from './lib/kanbanMockData';
 import type {
   RawFeedback,
   EvaluatedFeedback,
@@ -40,7 +41,16 @@ export default function SocialLayout() {
   const [activeChannel, setActiveChannel] = useState<FeedbackChannel>('all');
 
   // Raw feedback state - items waiting for AI processing
-  const [rawFeedback, setRawFeedback] = useState<RawFeedback[]>(mockRawFeedback);
+  const [rawFeedback, setRawFeedback] = useState<RawFeedback[]>(() => {
+    return mockKanbanFeedback.map(item => ({
+      id: item.id,
+      channel: item.channel as any,
+      author: item.author.name,
+      authorHandle: item.author.handle,
+      content: item.content.body,
+      timestamp: new Date(item.timestamp),
+    }));
+  });
 
   // Evaluated feedback state - items processed by AI
   const [evaluatedFeedback, setEvaluatedFeedback] = useState<EvaluatedFeedback[]>(

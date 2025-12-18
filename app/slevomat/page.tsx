@@ -285,7 +285,7 @@ export default function SlevomatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
+    <div className="min-h-screen bg-[#f5f5f5] light">
       {/* Feedback Panel */}
       <FeedbackPanel
         feedbackItems={slevomatFeedback}

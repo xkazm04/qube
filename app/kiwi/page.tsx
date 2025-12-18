@@ -211,7 +211,7 @@ export default function KiwiPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white light">
       {/* Feedback Panel */}
       <FeedbackPanel
         feedbackItems={kiwiFeedback}

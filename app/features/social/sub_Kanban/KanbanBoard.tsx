@@ -1,19 +1,146 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import type { FeedbackItem, KanbanStatus } from '../lib/kanbanTypes';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Mail,
+  Twitter,
+  Facebook,
+  MessageCircle,
+  Star,
+  Smartphone,
+  Instagram,
+  RotateCcw,
+  type LucideIcon,
+} from 'lucide-react';
+import type { FeedbackItem, KanbanStatus, KanbanChannel } from '../lib/kanbanTypes';
 import { KANBAN_COLUMNS } from '../lib/kanbanTypes';
 import { mockKanbanFeedback } from '../lib/kanbanMockData';
+import { transformDatasetToFeedbackItem } from '../lib/datasetLoader';
+import type { AIProvider, FeedbackAnalysisResult, UIFeedbackItem } from '../lib/aiTypes';
+import { useAIProcessing, useFeedbackSelection } from '../hooks/useAIProcessing';
 import KanbanColumn from './KanbanColumn';
 import CardDetailModal from './CardDetailModal';
+import AIProcessingPanel from './AIProcessingPanel';
 
-export default function KanbanBoard() {
-  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>(mockKanbanFeedback);
+// Channel icon mapping
+const ChannelIconMap: Record<KanbanChannel, LucideIcon> = {
+  email: Mail,
+  twitter: Twitter,
+  facebook: Facebook,
+  support_chat: MessageCircle,
+  trustpilot: Star,
+  app_store: Smartphone,
+  instagram: Instagram,
+};
+
+interface KanbanBoardProps {
+  useDataset?: boolean;
+}
+
+export default function KanbanBoard({ useDataset = false }: KanbanBoardProps) {
+  // Initialize with empty "new" items to simulate empty state
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>(() => 
+    mockKanbanFeedback.filter(item => item.status !== 'new')
+  );
+  const [datasetLoaded, setDatasetLoaded] = useState(false);
+
+  // Load dataset if enabled
+  useEffect(() => {
+    if (useDataset && !datasetLoaded) {
+      fetch('/api/dataset')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.feedback) {
+            const transformedItems = data.feedback.map(
+              (item: Parameters<typeof transformDatasetToFeedbackItem>[0], index: number) =>
+                transformDatasetToFeedbackItem(item, index)
+            );
+            setFeedbackItems(transformedItems);
+            setDatasetLoaded(true);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to load dataset:', err);
+        });
+    }
+  }, [useDataset, datasetLoaded]);
+
+  // Emulate loading data for a specific channel
+  const handleLoadChannelData = useCallback((channel: KanbanChannel) => {
+    const newItems = mockKanbanFeedback
+      .filter(item => item.status === 'new' && item.channel === channel)
+      .map(item => ({ ...item, id: `${item.id}-${Date.now()}` })); // Ensure unique IDs
+    
+    setFeedbackItems(prev => {
+      // Avoid duplicates based on content/author if needed, but for now just append
+      return [...prev, ...newItems];
+    });
+  }, []);
+
+  // Reset the view to start fresh
+  const handleResetView = useCallback(() => {
+    setFeedbackItems([]);
+    setDatasetLoaded(false);
+    deselectAll();
+    clearResults();
+  }, [deselectAll, clearResults]);
+
   const [draggingItem, setDraggingItem] = useState<FeedbackItem | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<KanbanStatus | null>(null);
   const [selectedItem, setSelectedItem] = useState<FeedbackItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Selection state
+  const {
+    selectedIds,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    deselectAll,
+    isSelected,
+    getSelectedArray,
+  } = useFeedbackSelection();
+
+  // AI Processing state
+  const {
+    status: processingStatus,
+    provider,
+    results: aiResults,
+    error: processingError,
+    progress,
+    isProcessing,
+    setProvider,
+    processFeedback,
+    clearResults,
+  } = useAIProcessing({
+    onSuccess: (results) => {
+      // After successful processing, move items to 'analyzed' status with animation
+      const resultIds = new Set(results.map((r) => r.feedbackId));
+      setFeedbackItems((prev) =>
+        prev.map((item) =>
+          resultIds.has(item.id)
+            ? {
+                ...item,
+                status: 'analyzed' as KanbanStatus,
+                analysis: {
+                  bugId: results.find((r) => r.feedbackId === item.id)?.jiraTicket?.summary || 'AI-Analysis',
+                  bugTag: results.find((r) => r.feedbackId === item.id)?.classification.toUpperCase() || 'ANALYZED',
+                  sentiment: item.analysis?.sentiment || 'neutral',
+                  suggestedPipeline: results.find((r) => r.feedbackId === item.id)?.suggestedPipeline || 'manual',
+                  confidence: results.find((r) => r.feedbackId === item.id)?.confidence || 0.8,
+                },
+              }
+            : item
+        )
+      );
+      // Clear selection after processing
+      deselectAll();
+    },
+    onError: (error) => {
+      console.error('AI Processing error:', error);
+    },
+  });
 
   const itemsByStatus = useMemo(() => {
     const grouped: Record<KanbanStatus, FeedbackItem[]> = {
@@ -102,6 +229,14 @@ export default function KanbanBoard() {
     setSelectedItem(item);
     setModalOpen(true);
   }, []);
+
+  const handleCardRightClick = useCallback(
+    (item: FeedbackItem, e: React.MouseEvent) => {
+      e.preventDefault();
+      toggleSelection(item.id);
+    },
+    [toggleSelection]
+  );
 
   const handleCardAction = useCallback(
     (action: string, item: FeedbackItem) => {
@@ -192,6 +327,37 @@ export default function KanbanBoard() {
     [selectedItem, handleCardAction]
   );
 
+  // Handle AI Processing
+  const handleProcessSelected = useCallback(async () => {
+    const selectedItems = feedbackItems.filter((item) => selectedIds.has(item.id));
+    if (selectedItems.length === 0) return;
+
+    // Transform FeedbackItem to UIFeedbackItem for the API
+    const uiFeedbackItems: UIFeedbackItem[] = selectedItems.map((item) => ({
+      id: item.id,
+      company: item.company,
+      channel: item.channel,
+      timestamp: item.timestamp,
+      author: item.author,
+      content: item.content,
+      conversation: item.conversation,
+      rating: item.rating,
+      bugReference: item.analysis?.bugId || '',
+      sentiment: item.analysis?.sentiment || 'neutral',
+      priority: item.priority,
+      tags: item.tags,
+      engagement: item.engagement,
+    }));
+
+    await processFeedback(uiFeedbackItems);
+  }, [feedbackItems, selectedIds, processFeedback]);
+
+  // Select all items in 'new' column
+  const handleSelectAllNew = useCallback(() => {
+    const newItemIds = itemsByStatus.new.map((item) => item.id);
+    selectAll(newItemIds);
+  }, [itemsByStatus.new, selectAll]);
+
   return (
     <div className="min-h-[calc(100vh-200px)]">
       {/* Board Header */}
@@ -205,14 +371,38 @@ export default function KanbanBoard() {
             Feedback Pipeline
           </h2>
           <p className="text-xs text-[var(--color-text-muted)]">
-            Drag cards between columns to update their status
+            Right-click cards to select, then process with AI
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
-          <span>Total: {feedbackItems.length}</span>
-          <span className="text-green-400">Done: {itemsByStatus.done.length}</span>
+        <div className="flex items-center gap-4">
+          <div className="text-xs text-[var(--color-text-secondary)] flex items-center gap-3">
+            <span>Total: {feedbackItems.length}</span>
+            <span className="text-green-400">Done: {itemsByStatus.done.length}</span>
+          </div>
+          <button
+            onClick={handleResetView}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-lg transition-colors"
+            title="Reset view and start fresh"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reset View
+          </button>
         </div>
       </motion.div>
+
+      {/* AI Processing Panel */}
+      <AIProcessingPanel
+        selectedCount={selectedCount}
+        provider={provider}
+        processingStatus={processingStatus}
+        progress={progress}
+        error={processingError}
+        onProviderChange={setProvider}
+        onProcess={handleProcessSelected}
+        onClearSelection={deselectAll}
+        onSelectAllNew={handleSelectAllNew}
+        newItemsCount={itemsByStatus.new.length}
+      />
 
       {/* Kanban Columns */}
       <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
@@ -229,14 +419,34 @@ export default function KanbanBoard() {
               items={itemsByStatus[column.id]}
               isDragOver={isDragOver}
               isValidDrop={isValidDrop}
+              selectedIds={selectedIds}
+              processingStatus={processingStatus}
+              aiResults={aiResults}
               onDragOver={handleDragOver(column.id)}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop(column.id)}
               onCardDragStart={handleCardDragStart}
               onCardDragEnd={handleCardDragEnd}
               onCardClick={handleCardClick}
+              onCardRightClick={handleCardRightClick}
               onCardAction={handleCardAction}
               draggingItem={draggingItem}
+              headerActions={
+                column.id === 'new' ? (
+                  <div className="flex gap-1 flex-wrap justify-center">
+                    {(Object.entries(ChannelIconMap) as [KanbanChannel, LucideIcon][]).map(([channel, IconComponent]) => (
+                      <button
+                        key={channel}
+                        onClick={() => handleLoadChannelData(channel)}
+                        className="p-1.5 rounded-md hover:bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                        title={`Load ${channel.replace('_', ' ')} feedback`}
+                      >
+                        <IconComponent className="w-4 h-4" />
+                      </button>
+                    ))}
+                  </div>
+                ) : undefined
+              }
             />
           );
         })}

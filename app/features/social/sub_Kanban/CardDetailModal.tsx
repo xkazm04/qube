@@ -1,11 +1,40 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import type { FeedbackItem } from '../lib/kanbanTypes';
-import { CHANNEL_ICONS, PRIORITY_INDICATORS } from '../lib/kanbanTypes';
+import {
+  X,
+  Mail,
+  Twitter,
+  Facebook,
+  MessageCircle,
+  Star,
+  Smartphone,
+  Instagram,
+  Share2,
+  Search,
+  UserCog,
+  Bot,
+  CheckCircle,
+  RotateCcw,
+  Ticket,
+  type LucideIcon,
+} from 'lucide-react';
+import type { FeedbackItem, KanbanChannel } from '../lib/kanbanTypes';
+import { PRIORITY_DOT_COLORS } from '../lib/kanbanTypes';
 import { getTimeAgo } from '../lib/kanbanMockData';
+
+// Channel icon component map
+const ChannelIcon: Record<KanbanChannel, LucideIcon> = {
+  email: Mail,
+  twitter: Twitter,
+  facebook: Facebook,
+  support_chat: MessageCircle,
+  trustpilot: Star,
+  app_store: Smartphone,
+  instagram: Instagram,
+};
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -20,7 +49,10 @@ export default function CardDetailModal({
   onClose,
   onAction,
 }: CardDetailModalProps) {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
@@ -36,34 +68,155 @@ export default function CardDetailModal({
     };
   }, [isOpen, onClose]);
 
-  if (!item) return null;
+  if (!mounted || !item) return null;
 
   const getActionButtons = () => {
     switch (item.status) {
       case 'new':
         return [
-          { id: 'analyze', label: 'Run Analysis', icon: '🔍', primary: true },
+          { id: 'analyze', label: 'Run Analysis', icon: Search, primary: true },
         ];
       case 'analyzed':
         return [
-          { id: 'assign-manual', label: 'Move to Manual', icon: '👨‍💻', primary: false },
-          { id: 'assign-auto', label: 'Send to AI Agent', icon: '🤖', primary: true },
+          { id: 'assign-manual', label: 'Move to Manual', icon: UserCog, primary: false },
+          { id: 'assign-auto', label: 'Send to AI Agent', icon: Bot, primary: true },
         ];
       case 'manual':
       case 'automatic':
         return [
-          { id: 'mark-done', label: 'Mark as Done', icon: '✅', primary: true },
+          { id: 'mark-done', label: 'Mark as Done', icon: CheckCircle, primary: true },
         ];
       case 'done':
         return [
-          { id: 'reopen', label: 'Reopen', icon: '🔄', primary: false },
+          { id: 'reopen', label: 'Reopen', icon: RotateCcw, primary: false },
         ];
       default:
         return [];
     }
   };
 
-  return (
+  const renderChannelSpecificContent = () => {
+    switch (item.channel) {
+      case 'email':
+        return (
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="bg-gray-50 dark:bg-gray-900/50 p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    {item.content.subject || '(No Subject)'}
+                  </h3>
+                  <div className="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{item.author.name}</span>
+                    <span>&lt;{item.author.email}&gt;</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400 whitespace-nowrap">
+                  {new Date(item.timestamp).toLocaleString()}
+                </div>
+              </div>
+            </div>
+            <div className="p-6 text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed font-serif text-base">
+              {item.content.body}
+            </div>
+          </div>
+        );
+
+      case 'twitter':
+        return (
+          <div className="bg-white dark:bg-black rounded-xl border border-gray-200 dark:border-gray-800 p-4 max-w-xl mx-auto shadow-sm">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center text-white font-bold text-lg">
+                  {item.author.name.charAt(0)}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1 truncate">
+                    <span className="font-bold text-gray-900 dark:text-white truncate">{item.author.name}</span>
+                    <span className="text-gray-500 dark:text-gray-400 truncate">{item.author.handle}</span>
+                    <span className="text-gray-500 dark:text-gray-400 mx-1">·</span>
+                    <span className="text-gray-500 dark:text-gray-400 hover:underline cursor-pointer">
+                      {getTimeAgo(item.timestamp)}
+                    </span>
+                  </div>
+                  <div className="text-gray-400">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" aria-hidden="true"><g><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></g></svg>
+                  </div>
+                </div>
+                <div className="mt-1 text-gray-900 dark:text-white text-[15px] leading-normal whitespace-pre-wrap">
+                  {item.content.body}
+                </div>
+                <div className="mt-3 flex items-center justify-between text-gray-500 dark:text-gray-400 max-w-md">
+                  <div className="flex items-center gap-2 group cursor-pointer hover:text-sky-500">
+                    <MessageCircle className="w-4 h-4 group-hover:bg-sky-500/10 rounded-full p-0.5 box-content transition-colors" />
+                    <span className="text-xs">{item.engagement?.replies || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-2 group cursor-pointer hover:text-green-500">
+                    <Share2 className="w-4 h-4 group-hover:bg-green-500/10 rounded-full p-0.5 box-content transition-colors" />
+                    <span className="text-xs">{item.engagement?.retweets || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-2 group cursor-pointer hover:text-pink-500">
+                    <div className="group-hover:bg-pink-500/10 rounded-full p-0.5 box-content transition-colors">
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><g><path d="M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.66-2.73 2.864 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12z"></path></g></svg>
+                    </div>
+                    <span className="text-xs">{item.engagement?.likes || 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'support_chat':
+        return (
+          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-[400px]">
+            <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-bold">
+                {item.author.name.charAt(0)}
+              </div>
+              <div>
+                <div className="font-medium text-sm text-gray-900 dark:text-gray-100">{item.author.name}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{item.author.device || 'Online'}</div>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-900/50">
+              {item.conversation?.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.role === 'customer' ? 'justify-start' : 'justify-end'}`}>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
+                      msg.role === 'customer'
+                        ? 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'
+                        : 'bg-blue-500 text-white rounded-tr-none'
+                    }`}
+                  >
+                    {msg.message}
+                  </div>
+                </div>
+              )) || (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] rounded-2xl px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none">
+                    {item.content.body}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="bg-[var(--color-surface-elevated)] p-4 rounded-lg border border-[var(--color-border-subtle)]">
+            <div className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
+              {item.content.body}
+            </div>
+          </div>
+        );
+    }
+  };
+
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -72,7 +225,7 @@ export default function CardDetailModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999]"
           />
 
           <motion.div
@@ -80,224 +233,136 @@ export default function CardDetailModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[80vh] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] z-50 flex flex-col overflow-hidden"
+            className="fixed inset-0 z-[10000] flex items-center justify-center p-4 pointer-events-none"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-subtle)]">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{CHANNEL_ICONS[item.channel]}</span>
-                <h2 className="text-base font-semibold text-[var(--color-text-primary)] capitalize">
-                  {item.channel.replace('_', ' ')} Feedback
-                </h2>
-                <span className="text-xs text-[var(--color-text-muted)]">
-                  • {getTimeAgo(item.timestamp)}
-                </span>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-[var(--color-surface-elevated)] rounded-[var(--radius-sm)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-              {/* Author info */}
-              <div className="space-y-1">
-                <div className="text-sm text-[var(--color-text-secondary)]">
-                  <span className="text-[var(--color-text-muted)]">From: </span>
-                  <span className="text-[var(--color-text-primary)] font-medium">
-                    {item.author.name}
-                    {item.author.handle && ` (${item.author.handle})`}
-                    {item.author.email && ` <${item.author.email}>`}
-                  </span>
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)]">
+                    {(() => {
+                      const IconComp = ChannelIcon[item.channel];
+                      return <IconComp className="w-5 h-5 text-[var(--color-text-secondary)]" />;
+                    })()}
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-[var(--color-text-primary)] capitalize flex items-center gap-2">
+                      {item.channel.replace('_', ' ')} Feedback
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                        item.priority === 'critical' ? 'border-red-500/30 text-red-500 bg-red-500/10' :
+                        item.priority === 'high' ? 'border-orange-500/30 text-orange-500 bg-orange-500/10' :
+                        'border-gray-500/30 text-gray-500 bg-gray-500/10'
+                      }`}>
+                        {item.priority.toUpperCase()}
+                      </span>
+                    </h2>
+                  </div>
                 </div>
-                {item.author.followers && (
-                  <div className="text-xs text-[var(--color-text-muted)]">
-                    Followers: {item.author.followers.toLocaleString()}
-                  </div>
-                )}
-                {item.author.device && (
-                  <div className="text-xs text-[var(--color-text-muted)]">
-                    Device: {item.author.device}
-                  </div>
-                )}
+                <button
+                  onClick={onClose}
+                  className="p-2 hover:bg-[var(--color-surface-elevated)] rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+                  aria-label="Close modal"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
 
-              {item.content.subject && (
-                <div>
-                  <div className="text-xs text-[var(--color-text-muted)] mb-1">Subject:</div>
-                  <div className="text-sm font-medium text-[var(--color-text-primary)]">
-                    {item.content.subject}
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[var(--color-surface)]">
+                {/* Channel Specific View */}
+                {renderChannelSpecificContent()}
+
+                {/* Metadata Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
+                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Status</div>
+                    <div className="font-medium capitalize text-[var(--color-text-primary)]">{item.status}</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
+                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Sentiment</div>
+                    <div className="font-medium capitalize text-[var(--color-text-primary)]">
+                      {item.analysis?.sentiment || 'Not analyzed'}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
+                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Confidence</div>
+                    <div className="font-medium text-[var(--color-text-primary)]">
+                      {item.analysis ? `${Math.round(item.analysis.confidence * 100)}%` : '-'}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)]">
+                    <div className="text-xs text-[var(--color-text-muted)] mb-1">Bug ID</div>
+                    <div className="font-medium font-mono text-xs text-[var(--color-text-primary)] truncate">
+                      {item.analysis?.bugId || '-'}
+                    </div>
                   </div>
                 </div>
-              )}
 
-              <div className="border-t border-[var(--color-border-subtle)]" />
-
-              <div>
-                <div className="text-xs text-[var(--color-text-muted)] mb-2">Content:</div>
-                <div className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap bg-[var(--color-surface-elevated)] p-3 rounded-[var(--radius-md)]">
-                  {item.content.body}
-                </div>
-              </div>
-
-              {item.content.translation && (
-                <div>
-                  <div className="text-xs text-[var(--color-text-muted)] mb-2">Translation:</div>
-                  <div className="text-sm text-[var(--color-text-secondary)] leading-relaxed italic border-l-2 border-[var(--color-accent)] pl-3">
-                    {item.content.translation}
-                  </div>
-                </div>
-              )}
-
-              {item.conversation && item.conversation.length > 0 && (
-                <div>
-                  <div className="text-xs text-[var(--color-text-muted)] mb-2">Conversation:</div>
-                  <div className="space-y-2 bg-[var(--color-surface-elevated)] p-3 rounded-[var(--radius-md)]">
-                    {item.conversation.map((msg, index) => (
-                      <div key={index} className="flex gap-2 text-sm">
-                        <span>{msg.role === 'customer' ? '👤' : '🎧'}</span>
-                        <span
-                          className={
-                            msg.role === 'agent'
-                              ? 'text-[var(--color-text-muted)] italic'
-                              : 'text-[var(--color-text-secondary)]'
-                          }
-                        >
-                          {msg.message}
-                        </span>
+                {/* Analysis Results */}
+                {item.analysis && (
+                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      <h3 className="text-sm font-semibold text-blue-400">AI Analysis</h3>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex gap-2">
+                        <span className="text-[var(--color-text-muted)] min-w-[80px]">Classification:</span>
+                        <span className="text-[var(--color-text-primary)]">{item.analysis.bugTag}</span>
                       </div>
+                      <div className="flex gap-2">
+                        <span className="text-[var(--color-text-muted)] min-w-[80px]">Suggestion:</span>
+                        <span className="text-[var(--color-text-primary)] capitalize">{item.analysis.suggestedPipeline} pipeline</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {item.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {item.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] border border-[var(--color-border-subtle)]"
+                      >
+                        #{tag}
+                      </span>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {item.rating !== undefined && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[var(--color-text-muted)]">Rating:</span>
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <span key={i} className={i < item.rating! ? 'star-filled' : 'text-[var(--color-text-muted)]'}>
-                        {i < item.rating! ? '★' : '☆'}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="border-t border-[var(--color-border-subtle)]" />
-
-              {item.analysis && (
-                <div className="bg-[var(--color-accent-subtle)] p-3 rounded-[var(--radius-md)] space-y-2">
-                  <div className="text-xs font-medium text-[var(--color-text-primary)]">
-                    Analysis Results
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-[var(--color-text-muted)]">Bug ID: </span>
-                      <span className="text-[var(--color-text-primary)] font-mono">
-                        {item.analysis.bugId}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[var(--color-text-muted)]">Tag: </span>
-                      <span className="text-[var(--color-text-primary)]">{item.analysis.bugTag}</span>
-                    </div>
-                    <div>
-                      <span className="text-[var(--color-text-muted)]">Sentiment: </span>
-                      <span className="text-[var(--color-text-primary)] capitalize">
-                        {item.analysis.sentiment}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[var(--color-text-muted)]">Suggested: </span>
-                      <span className="text-[var(--color-text-primary)] capitalize">
-                        {item.analysis.suggestedPipeline}
-                      </span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-[var(--color-text-muted)]">Confidence: </span>
-                      <span className="text-[var(--color-text-primary)]">
-                        {(item.analysis.confidence * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-4 text-xs">
-                <div>
-                  <span className="text-[var(--color-text-muted)]">Priority: </span>
-                  <span className="text-[var(--color-text-primary)]">
-                    {PRIORITY_INDICATORS[item.priority]} {item.priority}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[var(--color-text-muted)]">Status: </span>
-                  <span className="text-[var(--color-text-primary)] capitalize">{item.status}</span>
-                </div>
+                )}
               </div>
 
-              {item.linkedTickets && item.linkedTickets.length > 0 && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-[var(--color-text-muted)]">Linked Tickets:</span>
-                  <div className="flex gap-1">
-                    {item.linkedTickets.map((ticket) => (
-                      <span
-                        key={ticket}
-                        className="px-2 py-0.5 bg-[var(--color-surface-elevated)] text-[var(--color-accent)] rounded font-mono"
+              {/* Footer with actions */}
+              <div className="p-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)] flex items-center justify-between gap-3">
+                <button
+                  onClick={() => onAction('link-jira')}
+                  className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] rounded-[var(--radius-md)] transition-colors flex items-center gap-2"
+                >
+                  <Ticket className="w-4 h-4" /> Link Jira Ticket
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {getActionButtons().map((btn) => {
+                    const BtnIcon = btn.icon;
+                    return (
+                      <button
+                        key={btn.id}
+                        onClick={() => onAction(btn.id)}
+                        className={`
+                          px-4 py-2 text-sm rounded-[var(--radius-md)] transition-colors flex items-center gap-2 font-medium
+                          ${
+                            btn.primary
+                              ? 'bg-[var(--color-accent)] text-white hover:opacity-90 shadow-lg shadow-[var(--color-accent)]/20'
+                              : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] border border-[var(--color-border-subtle)]'
+                          }
+                        `}
                       >
-                        {ticket}
-                      </span>
-                    ))}
-                  </div>
+                        <BtnIcon className="w-4 h-4" /> {btn.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-
-              {item.tags.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-[var(--color-text-muted)]">Tags:</span>
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] px-2 py-0.5 bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Footer with actions */}
-            <div className="p-4 border-t border-[var(--color-border-subtle)] flex items-center justify-between gap-3">
-              <button
-                onClick={() => onAction('link-jira')}
-                className="px-3 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] rounded-[var(--radius-md)] transition-colors flex items-center gap-2"
-              >
-                🎫 Create Jira Ticket
-              </button>
-
-              <div className="flex items-center gap-2">
-                {getActionButtons().map((btn) => (
-                  <button
-                    key={btn.id}
-                    onClick={() => onAction(btn.id)}
-                    className={`
-                      px-4 py-2 text-sm rounded-[var(--radius-md)] transition-colors flex items-center gap-2
-                      ${
-                        btn.primary
-                          ? 'bg-[var(--color-accent)] text-white hover:opacity-90'
-                          : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)]'
-                      }
-                    `}
-                  >
-                    {btn.icon} {btn.label}
-                  </button>
-                ))}
               </div>
             </div>
           </motion.div>
@@ -305,4 +370,6 @@ export default function CardDetailModal({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 }

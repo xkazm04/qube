@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Facebook, Twitter, Mail, ExternalLink, Quote } from 'lucide-react';
+import { Facebook, Twitter, Mail, ExternalLink, Quote, MessageCircle, Star, Smartphone, Instagram, MessageSquare } from 'lucide-react';
 import type { RawFeedback } from '../lib/types';
 
 interface RawFeedbackItemProps {
@@ -11,7 +11,7 @@ interface RawFeedbackItemProps {
   isExiting?: boolean;
 }
 
-const channelConfig = {
+const channelConfig: Record<string, { icon: any; bgClass: string; borderClass: string; iconClass: string }> = {
   facebook: {
     icon: Facebook,
     bgClass: 'bg-blue-500/10',
@@ -30,6 +30,36 @@ const channelConfig = {
     borderClass: 'border-amber-500/20',
     iconClass: 'text-amber-400',
   },
+  support_chat: {
+    icon: MessageCircle,
+    bgClass: 'bg-green-500/10',
+    borderClass: 'border-green-500/20',
+    iconClass: 'text-green-400',
+  },
+  trustpilot: {
+    icon: Star,
+    bgClass: 'bg-emerald-500/10',
+    borderClass: 'border-emerald-500/20',
+    iconClass: 'text-emerald-400',
+  },
+  app_store: {
+    icon: Smartphone,
+    bgClass: 'bg-gray-500/10',
+    borderClass: 'border-gray-500/20',
+    iconClass: 'text-gray-400',
+  },
+  instagram: {
+    icon: Instagram,
+    bgClass: 'bg-pink-500/10',
+    borderClass: 'border-pink-500/20',
+    iconClass: 'text-pink-400',
+  },
+  default: {
+    icon: MessageSquare,
+    bgClass: 'bg-purple-500/10',
+    borderClass: 'border-purple-500/20',
+    iconClass: 'text-purple-400',
+  },
 };
 
 function formatTimeAgo(date: Date): string {
@@ -45,7 +75,7 @@ function formatTimeAgo(date: Date): string {
 }
 
 export default function RawFeedbackItem({ feedback, index, isExiting }: RawFeedbackItemProps) {
-  const channel = channelConfig[feedback.channel];
+  const channel = channelConfig[feedback.channel] || channelConfig.default;
   const ChannelIcon = channel.icon;
 
   return (

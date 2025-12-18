@@ -1,6 +1,17 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import {
+  Eye,
+  Search,
+  UserCog,
+  Bot,
+  CheckCircle,
+  RotateCcw,
+  Ticket,
+  Link,
+  type LucideIcon,
+} from 'lucide-react';
 import type { FeedbackItem, KanbanStatus } from '../lib/kanbanTypes';
 
 interface CardMenuProps {
@@ -12,21 +23,21 @@ interface CardMenuProps {
 interface MenuItem {
   id: string;
   label: string;
-  icon: string;
+  icon: LucideIcon;
   showIn?: KanbanStatus[];
   separator?: boolean;
 }
 
 const menuItems: MenuItem[] = [
-  { id: 'view', label: 'View Details', icon: '👁️' },
-  { id: 'analyze', label: 'Run Analysis', icon: '🔍', showIn: ['new'] },
-  { id: 'assign-manual', label: 'Assign to Developer', icon: '👨‍💻', showIn: ['analyzed'] },
-  { id: 'assign-auto', label: 'Send to AI Agent', icon: '🤖', showIn: ['analyzed'] },
-  { id: 'mark-done', label: 'Mark as Done', icon: '✅', showIn: ['manual', 'automatic'] },
-  { id: 'reopen', label: 'Reopen', icon: '🔄', showIn: ['done'] },
-  { id: 'separator-1', label: '', icon: '', separator: true },
-  { id: 'link-jira', label: 'Create Jira Ticket', icon: '🎫' },
-  { id: 'copy-link', label: 'Copy Link', icon: '🔗' },
+  { id: 'view', label: 'View Details', icon: Eye },
+  { id: 'analyze', label: 'Run Analysis', icon: Search, showIn: ['new'] },
+  { id: 'assign-manual', label: 'Assign to Developer', icon: UserCog, showIn: ['analyzed'] },
+  { id: 'assign-auto', label: 'Send to AI Agent', icon: Bot, showIn: ['analyzed'] },
+  { id: 'mark-done', label: 'Mark as Done', icon: CheckCircle, showIn: ['manual', 'automatic'] },
+  { id: 'reopen', label: 'Reopen', icon: RotateCcw, showIn: ['done'] },
+  { id: 'separator-1', label: '', icon: Eye, separator: true },
+  { id: 'link-jira', label: 'Create Jira Ticket', icon: Ticket },
+  { id: 'copy-link', label: 'Copy Link', icon: Link },
 ];
 
 export default function CardMenu({ item, onClose, onAction }: CardMenuProps) {
@@ -74,6 +85,8 @@ export default function CardMenu({ item, onClose, onAction }: CardMenuProps) {
           );
         }
 
+        const IconComponent = menuItem.icon;
+
         return (
           <button
             key={menuItem.id}
@@ -84,7 +97,7 @@ export default function CardMenu({ item, onClose, onAction }: CardMenuProps) {
             className="flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-surface)] rounded-[var(--radius-sm)] mx-1 transition-colors"
             role="menuitem"
           >
-            <span className="text-sm w-5 text-center">{menuItem.icon}</span>
+            <IconComponent className="w-4 h-4 text-[var(--color-text-secondary)]" />
             <span>{menuItem.label}</span>
           </button>
         );

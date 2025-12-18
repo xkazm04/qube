@@ -105,9 +105,17 @@ export default function CompactFeedbackItem({
       className="rounded-lg border border-gray-700/40 bg-gray-800/20 hover:bg-gray-800/40 transition-colors"
     >
       {/* Collapsed view */}
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-3 py-2.5 flex items-center gap-3 text-left"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
+        className="w-full px-3 py-2.5 flex items-center gap-3 text-left cursor-pointer"
       >
         {/* Priority + Category indicator */}
         <div className="flex items-center gap-2">
@@ -176,7 +184,7 @@ export default function CompactFeedbackItem({
             )}
           </div>
         </div>
-      </button>
+      </div>
 
       {/* Expanded view */}
       <AnimatePresence>
